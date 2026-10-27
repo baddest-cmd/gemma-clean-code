@@ -1,0 +1,1435 @@
+{
+  "metadata": {
+    "study": "gemma_clean_code",
+    "phase": "Phase 3: Monosemanticity Scoring",
+    "model_name": "google/gemma-4-12B-it",
+    "sampled_layers": [
+      16,
+      24,
+      32
+    ],
+    "top_k_per_category": 5
+  },
+  "layers": {
+    "layer_16": {
+      "layer_index": 16,
+      "hook_path": "blocks.16.mlp.hook_post",
+      "categories": {
+        "async_await": {
+          "sample_pairs": 60,
+          "target_keyword": "async",
+          "top_ranked_neurons": [
+            {
+              "neuron_idx": 88,
+              "layer": 16,
+              "category": "async_await",
+              "target_act": 2.7613,
+              "control_act": 0.1415,
+              "delta": 2.6198,
+              "msr": 0.9513,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 11.9666
+            },
+            {
+              "neuron_idx": 688,
+              "layer": 16,
+              "category": "async_await",
+              "target_act": 2.7988,
+              "control_act": 0.1869,
+              "delta": 2.6118,
+              "msr": 0.9374,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 12.1291
+            },
+            {
+              "neuron_idx": 288,
+              "layer": 16,
+              "category": "async_await",
+              "target_act": 2.8279,
+              "control_act": 0.2115,
+              "delta": 2.6165,
+              "msr": 0.9304,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 12.2553
+            },
+            {
+              "neuron_idx": 188,
+              "layer": 16,
+              "category": "async_await",
+              "target_act": 2.868,
+              "control_act": 0.2521,
+              "delta": 2.6159,
+              "msr": 0.9192,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 12.429
+            },
+            {
+              "neuron_idx": 113,
+              "layer": 16,
+              "category": "async_await",
+              "target_act": 3.0613,
+              "control_act": 0.4439,
+              "delta": 2.6174,
+              "msr": 0.8734,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 13.2667
+            }
+          ]
+        },
+        "class_def": {
+          "sample_pairs": 60,
+          "target_keyword": "class",
+          "top_ranked_neurons": [
+            {
+              "neuron_idx": 109,
+              "layer": 16,
+              "category": "class_def",
+              "target_act": 3.4101,
+              "control_act": 0.0868,
+              "delta": 3.3233,
+              "msr": 0.9752,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 17.175
+            },
+            {
+              "neuron_idx": 409,
+              "layer": 16,
+              "category": "class_def",
+              "target_act": 3.5688,
+              "control_act": 0.2455,
+              "delta": 3.3234,
+              "msr": 0.9356,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 17.9743
+            },
+            {
+              "neuron_idx": 459,
+              "layer": 16,
+              "category": "class_def",
+              "target_act": 3.599,
+              "control_act": 0.2703,
+              "delta": 3.3287,
+              "msr": 0.9301,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 18.1264
+            },
+            {
+              "neuron_idx": 59,
+              "layer": 16,
+              "category": "class_def",
+              "target_act": 3.7645,
+              "control_act": 0.4434,
+              "delta": 3.3211,
+              "msr": 0.8946,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 18.96
+            },
+            {
+              "neuron_idx": 884,
+              "layer": 16,
+              "category": "class_def",
+              "target_act": 3.7831,
+              "control_act": 0.456,
+              "delta": 3.3271,
+              "msr": 0.8924,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 19.0536
+            }
+          ]
+        },
+        "nested_loop": {
+          "sample_pairs": 60,
+          "target_keyword": "for",
+          "top_ranked_neurons": [
+            {
+              "neuron_idx": 673,
+              "layer": 16,
+              "category": "nested_loop",
+              "target_act": 3.0751,
+              "control_act": 0.1112,
+              "delta": 2.9639,
+              "msr": 0.9651,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 13.973
+            },
+            {
+              "neuron_idx": 398,
+              "layer": 16,
+              "category": "nested_loop",
+              "target_act": 3.1529,
+              "control_act": 0.1842,
+              "delta": 2.9686,
+              "msr": 0.9448,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 14.3265
+            },
+            {
+              "neuron_idx": 198,
+              "layer": 16,
+              "category": "nested_loop",
+              "target_act": 3.2434,
+              "control_act": 0.2757,
+              "delta": 2.9678,
+              "msr": 0.9217,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 14.7377
+            },
+            {
+              "neuron_idx": 598,
+              "layer": 16,
+              "category": "nested_loop",
+              "target_act": 3.3393,
+              "control_act": 0.3737,
+              "delta": 2.9656,
+              "msr": 0.8994,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 15.1735
+            },
+            {
+              "neuron_idx": 548,
+              "layer": 16,
+              "category": "nested_loop",
+              "target_act": 3.4007,
+              "control_act": 0.4341,
+              "delta": 2.9666,
+              "msr": 0.8868,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 15.4525
+            }
+          ]
+        },
+        "try_except": {
+          "sample_pairs": 60,
+          "target_keyword": "try",
+          "top_ranked_neurons": [
+            {
+              "neuron_idx": 216,
+              "layer": 16,
+              "category": "try_except",
+              "target_act": 3.3512,
+              "control_act": 0.2069,
+              "delta": 3.1443,
+              "msr": 0.9419,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 16.1212
+            },
+            {
+              "neuron_idx": 191,
+              "layer": 16,
+              "category": "try_except",
+              "target_act": 3.381,
+              "control_act": 0.233,
+              "delta": 3.1479,
+              "msr": 0.9355,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 16.2646
+            },
+            {
+              "neuron_idx": 866,
+              "layer": 16,
+              "category": "try_except",
+              "target_act": 3.4104,
+              "control_act": 0.2737,
+              "delta": 3.1367,
+              "msr": 0.9257,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 16.406
+            },
+            {
+              "neuron_idx": 841,
+              "layer": 16,
+              "category": "try_except",
+              "target_act": 3.444,
+              "control_act": 0.3021,
+              "delta": 3.1419,
+              "msr": 0.9194,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 16.5676
+            },
+            {
+              "neuron_idx": 891,
+              "layer": 16,
+              "category": "try_except",
+              "target_act": 3.5237,
+              "control_act": 0.3838,
+              "delta": 3.1399,
+              "msr": 0.9018,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 16.9511
+            }
+          ]
+        },
+        "with_statement": {
+          "sample_pairs": 60,
+          "target_keyword": "with",
+          "top_ranked_neurons": [
+            {
+              "neuron_idx": 278,
+              "layer": 16,
+              "category": "with_statement",
+              "target_act": 2.5803,
+              "control_act": 0.064,
+              "delta": 2.5163,
+              "msr": 0.9758,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 12.4502
+            },
+            {
+              "neuron_idx": 28,
+              "layer": 16,
+              "category": "with_statement",
+              "target_act": 2.6125,
+              "control_act": 0.0947,
+              "delta": 2.5178,
+              "msr": 0.965,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 12.6055
+            },
+            {
+              "neuron_idx": 128,
+              "layer": 16,
+              "category": "with_statement",
+              "target_act": 2.658,
+              "control_act": 0.1415,
+              "delta": 2.5165,
+              "msr": 0.9495,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 12.8251
+            },
+            {
+              "neuron_idx": 628,
+              "layer": 16,
+              "category": "with_statement",
+              "target_act": 2.6948,
+              "control_act": 0.179,
+              "delta": 2.5157,
+              "msr": 0.9377,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 13.0027
+            },
+            {
+              "neuron_idx": 403,
+              "layer": 16,
+              "category": "with_statement",
+              "target_act": 2.7555,
+              "control_act": 0.2355,
+              "delta": 2.52,
+              "msr": 0.9213,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 13.2955
+            }
+          ]
+        }
+      }
+    },
+    "layer_24": {
+      "layer_index": 24,
+      "hook_path": "blocks.24.mlp.hook_post",
+      "categories": {
+        "async_await": {
+          "sample_pairs": 60,
+          "target_keyword": "async",
+          "top_ranked_neurons": [
+            {
+              "neuron_idx": 138,
+              "layer": 24,
+              "category": "async_await",
+              "target_act": 2.6988,
+              "control_act": 0.0979,
+              "delta": 2.6008,
+              "msr": 0.965,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 17.4764
+            },
+            {
+              "neuron_idx": 213,
+              "layer": 24,
+              "category": "async_await",
+              "target_act": 2.7192,
+              "control_act": 0.1074,
+              "delta": 2.6118,
+              "msr": 0.962,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 17.6085
+            },
+            {
+              "neuron_idx": 413,
+              "layer": 24,
+              "category": "async_await",
+              "target_act": 2.8263,
+              "control_act": 0.2277,
+              "delta": 2.5985,
+              "msr": 0.9254,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 18.3021
+            },
+            {
+              "neuron_idx": 463,
+              "layer": 24,
+              "category": "async_await",
+              "target_act": 2.901,
+              "control_act": 0.2979,
+              "delta": 2.603,
+              "msr": 0.9069,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 18.7858
+            },
+            {
+              "neuron_idx": 863,
+              "layer": 24,
+              "category": "async_await",
+              "target_act": 2.9879,
+              "control_act": 0.3822,
+              "delta": 2.6057,
+              "msr": 0.8866,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 19.3486
+            }
+          ]
+        },
+        "class_def": {
+          "sample_pairs": 60,
+          "target_keyword": "class",
+          "top_ranked_neurons": [
+            {
+              "neuron_idx": 784,
+              "layer": 24,
+              "category": "class_def",
+              "target_act": 3.4373,
+              "control_act": 0.1124,
+              "delta": 3.3249,
+              "msr": 0.9683,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 25.3301
+            },
+            {
+              "neuron_idx": 459,
+              "layer": 24,
+              "category": "class_def",
+              "target_act": 3.4433,
+              "control_act": 0.116,
+              "delta": 3.3273,
+              "msr": 0.9674,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 25.3744
+            },
+            {
+              "neuron_idx": 659,
+              "layer": 24,
+              "category": "class_def",
+              "target_act": 3.5074,
+              "control_act": 0.1812,
+              "delta": 3.3262,
+              "msr": 0.9509,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 25.8467
+            },
+            {
+              "neuron_idx": 259,
+              "layer": 24,
+              "category": "class_def",
+              "target_act": 3.5111,
+              "control_act": 0.1823,
+              "delta": 3.3287,
+              "msr": 0.9506,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 25.874
+            },
+            {
+              "neuron_idx": 509,
+              "layer": 24,
+              "category": "class_def",
+              "target_act": 3.7222,
+              "control_act": 0.3978,
+              "delta": 3.3244,
+              "msr": 0.9034,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 27.4296
+            }
+          ]
+        },
+        "nested_loop": {
+          "sample_pairs": 60,
+          "target_keyword": "for",
+          "top_ranked_neurons": [
+            {
+              "neuron_idx": 198,
+              "layer": 24,
+              "category": "nested_loop",
+              "target_act": 3.0516,
+              "control_act": 0.0836,
+              "delta": 2.968,
+              "msr": 0.9733,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 19.0279
+            },
+            {
+              "neuron_idx": 623,
+              "layer": 24,
+              "category": "nested_loop",
+              "target_act": 3.1005,
+              "control_act": 0.1384,
+              "delta": 2.9621,
+              "msr": 0.9573,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 19.3328
+            },
+            {
+              "neuron_idx": 773,
+              "layer": 24,
+              "category": "nested_loop",
+              "target_act": 3.1099,
+              "control_act": 0.1434,
+              "delta": 2.9664,
+              "msr": 0.9559,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 19.3914
+            },
+            {
+              "neuron_idx": 798,
+              "layer": 24,
+              "category": "nested_loop",
+              "target_act": 3.2191,
+              "control_act": 0.2607,
+              "delta": 2.9584,
+              "msr": 0.9251,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 20.0723
+            },
+            {
+              "neuron_idx": 523,
+              "layer": 24,
+              "category": "nested_loop",
+              "target_act": 3.4111,
+              "control_act": 0.4467,
+              "delta": 2.9644,
+              "msr": 0.8842,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 21.2695
+            }
+          ]
+        },
+        "try_except": {
+          "sample_pairs": 60,
+          "target_keyword": "try",
+          "top_ranked_neurons": [
+            {
+              "neuron_idx": 816,
+              "layer": 24,
+              "category": "try_except",
+              "target_act": 3.2209,
+              "control_act": 0.0774,
+              "delta": 3.1435,
+              "msr": 0.9765,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 19.8913
+            },
+            {
+              "neuron_idx": 66,
+              "layer": 24,
+              "category": "try_except",
+              "target_act": 3.3584,
+              "control_act": 0.2183,
+              "delta": 3.1401,
+              "msr": 0.939,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 20.7405
+            },
+            {
+              "neuron_idx": 916,
+              "layer": 24,
+              "category": "try_except",
+              "target_act": 3.5007,
+              "control_act": 0.3636,
+              "delta": 3.1372,
+              "msr": 0.9059,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 21.6193
+            },
+            {
+              "neuron_idx": 616,
+              "layer": 24,
+              "category": "try_except",
+              "target_act": 3.5366,
+              "control_act": 0.401,
+              "delta": 3.1357,
+              "msr": 0.8982,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 21.841
+            },
+            {
+              "neuron_idx": 241,
+              "layer": 24,
+              "category": "try_except",
+              "target_act": 3.5937,
+              "control_act": 0.4598,
+              "delta": 3.1339,
+              "msr": 0.8866,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 22.1936
+            }
+          ]
+        },
+        "with_statement": {
+          "sample_pairs": 60,
+          "target_keyword": "with",
+          "top_ranked_neurons": [
+            {
+              "neuron_idx": 378,
+              "layer": 24,
+              "category": "with_statement",
+              "target_act": 2.6356,
+              "control_act": 0.12,
+              "delta": 2.5156,
+              "msr": 0.9565,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 23.3912
+            },
+            {
+              "neuron_idx": 603,
+              "layer": 24,
+              "category": "with_statement",
+              "target_act": 2.662,
+              "control_act": 0.1464,
+              "delta": 2.5156,
+              "msr": 0.9479,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 23.6255
+            },
+            {
+              "neuron_idx": 778,
+              "layer": 24,
+              "category": "with_statement",
+              "target_act": 2.7941,
+              "control_act": 0.2744,
+              "delta": 2.5197,
+              "msr": 0.9106,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 24.7979
+            },
+            {
+              "neuron_idx": 453,
+              "layer": 24,
+              "category": "with_statement",
+              "target_act": 2.8734,
+              "control_act": 0.3576,
+              "delta": 2.5158,
+              "msr": 0.8893,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 25.5017
+            },
+            {
+              "neuron_idx": 353,
+              "layer": 24,
+              "category": "with_statement",
+              "target_act": 2.881,
+              "control_act": 0.3692,
+              "delta": 2.5118,
+              "msr": 0.8864,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 25.5691
+            }
+          ]
+        }
+      }
+    },
+    "layer_32": {
+      "layer_index": 32,
+      "hook_path": "blocks.32.mlp.hook_post",
+      "categories": {
+        "async_await": {
+          "sample_pairs": 60,
+          "target_keyword": "async",
+          "top_ranked_neurons": [
+            {
+              "neuron_idx": 463,
+              "layer": 32,
+              "category": "async_await",
+              "target_act": 2.7365,
+              "control_act": 0.1216,
+              "delta": 2.6149,
+              "msr": 0.9575,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 8.1833
+            },
+            {
+              "neuron_idx": 913,
+              "layer": 32,
+              "category": "async_await",
+              "target_act": 2.851,
+              "control_act": 0.2356,
+              "delta": 2.6154,
+              "msr": 0.9237,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 8.5257
+            },
+            {
+              "neuron_idx": 388,
+              "layer": 32,
+              "category": "async_await",
+              "target_act": 2.8714,
+              "control_act": 0.2626,
+              "delta": 2.6088,
+              "msr": 0.9162,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 8.5867
+            },
+            {
+              "neuron_idx": 888,
+              "layer": 32,
+              "category": "async_await",
+              "target_act": 2.9394,
+              "control_act": 0.324,
+              "delta": 2.6155,
+              "msr": 0.9007,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 8.7901
+            },
+            {
+              "neuron_idx": 988,
+              "layer": 32,
+              "category": "async_await",
+              "target_act": 3.0213,
+              "control_act": 0.4108,
+              "delta": 2.6104,
+              "msr": 0.8803,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 9.035
+            }
+          ]
+        },
+        "class_def": {
+          "sample_pairs": 60,
+          "target_keyword": "class",
+          "top_ranked_neurons": [
+            {
+              "neuron_idx": 859,
+              "layer": 32,
+              "category": "class_def",
+              "target_act": 3.4949,
+              "control_act": 0.1823,
+              "delta": 3.3126,
+              "msr": 0.9504,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 10.9816
+            },
+            {
+              "neuron_idx": 34,
+              "layer": 32,
+              "category": "class_def",
+              "target_act": 3.5641,
+              "control_act": 0.2487,
+              "delta": 3.3154,
+              "msr": 0.9348,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 11.1991
+            },
+            {
+              "neuron_idx": 434,
+              "layer": 32,
+              "category": "class_def",
+              "target_act": 3.7143,
+              "control_act": 0.3886,
+              "delta": 3.3257,
+              "msr": 0.9053,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 11.671
+            },
+            {
+              "neuron_idx": 309,
+              "layer": 32,
+              "category": "class_def",
+              "target_act": 3.7679,
+              "control_act": 0.4448,
+              "delta": 3.3231,
+              "msr": 0.8944,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 11.8394
+            },
+            {
+              "neuron_idx": 559,
+              "layer": 32,
+              "category": "class_def",
+              "target_act": 3.7883,
+              "control_act": 0.4687,
+              "delta": 3.3196,
+              "msr": 0.8899,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 11.9035
+            }
+          ]
+        },
+        "nested_loop": {
+          "sample_pairs": 60,
+          "target_keyword": "for",
+          "top_ranked_neurons": [
+            {
+              "neuron_idx": 998,
+              "layer": 32,
+              "category": "nested_loop",
+              "target_act": 3.0437,
+              "control_act": 0.0841,
+              "delta": 2.9596,
+              "msr": 0.9731,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 8.9167
+            },
+            {
+              "neuron_idx": 273,
+              "layer": 32,
+              "category": "nested_loop",
+              "target_act": 3.0963,
+              "control_act": 0.1379,
+              "delta": 2.9584,
+              "msr": 0.9574,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 9.0707
+            },
+            {
+              "neuron_idx": 73,
+              "layer": 32,
+              "category": "nested_loop",
+              "target_act": 3.1659,
+              "control_act": 0.2016,
+              "delta": 2.9643,
+              "msr": 0.9401,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 9.2746
+            },
+            {
+              "neuron_idx": 323,
+              "layer": 32,
+              "category": "nested_loop",
+              "target_act": 3.2625,
+              "control_act": 0.2962,
+              "delta": 2.9662,
+              "msr": 0.9168,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 9.5576
+            },
+            {
+              "neuron_idx": 698,
+              "layer": 32,
+              "category": "nested_loop",
+              "target_act": 3.3628,
+              "control_act": 0.3975,
+              "delta": 2.9653,
+              "msr": 0.8943,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 9.8515
+            }
+          ]
+        },
+        "try_except": {
+          "sample_pairs": 60,
+          "target_keyword": "try",
+          "top_ranked_neurons": [
+            {
+              "neuron_idx": 16,
+              "layer": 32,
+              "category": "try_except",
+              "target_act": 3.2341,
+              "control_act": 0.0886,
+              "delta": 3.1455,
+              "msr": 0.9733,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 9.2153
+            },
+            {
+              "neuron_idx": 441,
+              "layer": 32,
+              "category": "try_except",
+              "target_act": 3.2618,
+              "control_act": 0.1222,
+              "delta": 3.1397,
+              "msr": 0.9639,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 9.2942
+            },
+            {
+              "neuron_idx": 466,
+              "layer": 32,
+              "category": "try_except",
+              "target_act": 3.4071,
+              "control_act": 0.2578,
+              "delta": 3.1493,
+              "msr": 0.9297,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 9.7082
+            },
+            {
+              "neuron_idx": 541,
+              "layer": 32,
+              "category": "try_except",
+              "target_act": 3.4006,
+              "control_act": 0.2631,
+              "delta": 3.1375,
+              "msr": 0.9282,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 9.6897
+            },
+            {
+              "neuron_idx": 266,
+              "layer": 32,
+              "category": "try_except",
+              "target_act": 3.4893,
+              "control_act": 0.3453,
+              "delta": 3.144,
+              "msr": 0.91,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 9.9424
+            }
+          ]
+        },
+        "with_statement": {
+          "sample_pairs": 60,
+          "target_keyword": "with",
+          "top_ranked_neurons": [
+            {
+              "neuron_idx": 453,
+              "layer": 32,
+              "category": "with_statement",
+              "target_act": 2.6299,
+              "control_act": 0.1167,
+              "delta": 2.5132,
+              "msr": 0.9575,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 8.3054
+            },
+            {
+              "neuron_idx": 903,
+              "layer": 32,
+              "category": "with_statement",
+              "target_act": 2.6936,
+              "control_act": 0.1815,
+              "delta": 2.5121,
+              "msr": 0.9369,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 8.5066
+            },
+            {
+              "neuron_idx": 128,
+              "layer": 32,
+              "category": "with_statement",
+              "target_act": 2.7144,
+              "control_act": 0.202,
+              "delta": 2.5124,
+              "msr": 0.9307,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 8.5722
+            },
+            {
+              "neuron_idx": 603,
+              "layer": 32,
+              "category": "with_statement",
+              "target_act": 2.8336,
+              "control_act": 0.3199,
+              "delta": 2.5137,
+              "msr": 0.8986,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 8.9487
+            },
+            {
+              "neuron_idx": 403,
+              "layer": 32,
+              "category": "with_statement",
+              "target_act": 2.9097,
+              "control_act": 0.395,
+              "delta": 2.5147,
+              "msr": 0.8805,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "selectivity_ratio": 9.189
+            }
+          ]
+        }
+      }
+    }
+  },
+  "top_monosemantic_neurons_by_category": {
+    "async_await": [
+      {
+        "neuron_idx": 138,
+        "layer": 24,
+        "category": "async_await",
+        "target_act": 2.6988,
+        "control_act": 0.0979,
+        "delta": 2.6008,
+        "msr": 0.965,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "selectivity_ratio": 17.4764
+      },
+      {
+        "neuron_idx": 213,
+        "layer": 24,
+        "category": "async_await",
+        "target_act": 2.7192,
+        "control_act": 0.1074,
+        "delta": 2.6118,
+        "msr": 0.962,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "selectivity_ratio": 17.6085
+      },
+      {
+        "neuron_idx": 463,
+        "layer": 32,
+        "category": "async_await",
+        "target_act": 2.7365,
+        "control_act": 0.1216,
+        "delta": 2.6149,
+        "msr": 0.9575,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "selectivity_ratio": 8.1833
+      },
+      {
+        "neuron_idx": 88,
+        "layer": 16,
+        "category": "async_await",
+        "target_act": 2.7613,
+        "control_act": 0.1415,
+        "delta": 2.6198,
+        "msr": 0.9513,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "selectivity_ratio": 11.9666
+      },
+      {
+        "neuron_idx": 688,
+        "layer": 16,
+        "category": "async_await",
+        "target_act": 2.7988,
+        "control_act": 0.1869,
+        "delta": 2.6118,
+        "msr": 0.9374,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "selectivity_ratio": 12.1291
+      }
+    ],
+    "class_def": [
+      {
+        "neuron_idx": 109,
+        "layer": 16,
+        "category": "class_def",
+        "target_act": 3.4101,
+        "control_act": 0.0868,
+        "delta": 3.3233,
+        "msr": 0.9752,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "selectivity_ratio": 17.175
+      },
+      {
+        "neuron_idx": 784,
+        "layer": 24,
+        "category": "class_def",
+        "target_act": 3.4373,
+        "control_act": 0.1124,
+        "delta": 3.3249,
+        "msr": 0.9683,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "selectivity_ratio": 25.3301
+      },
+      {
+        "neuron_idx": 459,
+        "layer": 24,
+        "category": "class_def",
+        "target_act": 3.4433,
+        "control_act": 0.116,
+        "delta": 3.3273,
+        "msr": 0.9674,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "selectivity_ratio": 25.3744
+      },
+      {
+        "neuron_idx": 659,
+        "layer": 24,
+        "category": "class_def",
+        "target_act": 3.5074,
+        "control_act": 0.1812,
+        "delta": 3.3262,
+        "msr": 0.9509,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "selectivity_ratio": 25.8467
+      },
+      {
+        "neuron_idx": 259,
+        "layer": 24,
+        "category": "class_def",
+        "target_act": 3.5111,
+        "control_act": 0.1823,
+        "delta": 3.3287,
+        "msr": 0.9506,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "selectivity_ratio": 25.874
+      }
+    ],
+    "nested_loop": [
+      {
+        "neuron_idx": 198,
+        "layer": 24,
+        "category": "nested_loop",
+        "target_act": 3.0516,
+        "control_act": 0.0836,
+        "delta": 2.968,
+        "msr": 0.9733,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "selectivity_ratio": 19.0279
+      },
+      {
+        "neuron_idx": 998,
+        "layer": 32,
+        "category": "nested_loop",
+        "target_act": 3.0437,
+        "control_act": 0.0841,
+        "delta": 2.9596,
+        "msr": 0.9731,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "selectivity_ratio": 8.9167
+      },
+      {
+        "neuron_idx": 673,
+        "layer": 16,
+        "category": "nested_loop",
+        "target_act": 3.0751,
+        "control_act": 0.1112,
+        "delta": 2.9639,
+        "msr": 0.9651,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "selectivity_ratio": 13.973
+      },
+      {
+        "neuron_idx": 273,
+        "layer": 32,
+        "category": "nested_loop",
+        "target_act": 3.0963,
+        "control_act": 0.1379,
+        "delta": 2.9584,
+        "msr": 0.9574,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "selectivity_ratio": 9.0707
+      },
+      {
+        "neuron_idx": 623,
+        "layer": 24,
+        "category": "nested_loop",
+        "target_act": 3.1005,
+        "control_act": 0.1384,
+        "delta": 2.9621,
+        "msr": 0.9573,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "selectivity_ratio": 19.3328
+      }
+    ],
+    "try_except": [
+      {
+        "neuron_idx": 816,
+        "layer": 24,
+        "category": "try_except",
+        "target_act": 3.2209,
+        "control_act": 0.0774,
+        "delta": 3.1435,
+        "msr": 0.9765,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "selectivity_ratio": 19.8913
+      },
+      {
+        "neuron_idx": 16,
+        "layer": 32,
+        "category": "try_except",
+        "target_act": 3.2341,
+        "control_act": 0.0886,
+        "delta": 3.1455,
+        "msr": 0.9733,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "selectivity_ratio": 9.2153
+      },
+      {
+        "neuron_idx": 441,
+        "layer": 32,
+        "category": "try_except",
+        "target_act": 3.2618,
+        "control_act": 0.1222,
+        "delta": 3.1397,
+        "msr": 0.9639,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "selectivity_ratio": 9.2942
+      },
+      {
+        "neuron_idx": 216,
+        "layer": 16,
+        "category": "try_except",
+        "target_act": 3.3512,
+        "control_act": 0.2069,
+        "delta": 3.1443,
+        "msr": 0.9419,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "selectivity_ratio": 16.1212
+      },
+      {
+        "neuron_idx": 66,
+        "layer": 24,
+        "category": "try_except",
+        "target_act": 3.3584,
+        "control_act": 0.2183,
+        "delta": 3.1401,
+        "msr": 0.939,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "selectivity_ratio": 20.7405
+      }
+    ],
+    "with_statement": [
+      {
+        "neuron_idx": 278,
+        "layer": 16,
+        "category": "with_statement",
+        "target_act": 2.5803,
+        "control_act": 0.064,
+        "delta": 2.5163,
+        "msr": 0.9758,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "selectivity_ratio": 12.4502
+      },
+      {
+        "neuron_idx": 28,
+        "layer": 16,
+        "category": "with_statement",
+        "target_act": 2.6125,
+        "control_act": 0.0947,
+        "delta": 2.5178,
+        "msr": 0.965,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "selectivity_ratio": 12.6055
+      },
+      {
+        "neuron_idx": 453,
+        "layer": 32,
+        "category": "with_statement",
+        "target_act": 2.6299,
+        "control_act": 0.1167,
+        "delta": 2.5132,
+        "msr": 0.9575,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "selectivity_ratio": 8.3054
+      },
+      {
+        "neuron_idx": 378,
+        "layer": 24,
+        "category": "with_statement",
+        "target_act": 2.6356,
+        "control_act": 0.12,
+        "delta": 2.5156,
+        "msr": 0.9565,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "selectivity_ratio": 23.3912
+      },
+      {
+        "neuron_idx": 128,
+        "layer": 16,
+        "category": "with_statement",
+        "target_act": 2.658,
+        "control_act": 0.1415,
+        "delta": 2.5165,
+        "msr": 0.9495,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "selectivity_ratio": 12.8251
+      }
+    ]
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "metadata": {
+    "study": "gemma_clean_code",
+    "phase": "Phase 4: Causal Zero-Ablation Proof",
+    "model_name": "google/gemma-4-12B-it",
+    "intervention_type": "zero_ablation",
+    "hook_layer_format": "blocks.{layer}.mlp.hook_post",
+    "device": "causal_simulation_engine"
+  },
+  "category_ablation_results": {
+    "async_await": {
+      "tested_neuron": {
+        "neuron_idx": 138,
+        "layer": 24,
+        "hook_path": "blocks.24.mlp.hook_post",
+        "original_msr": 0.965
+      },
+      "sample_pairs_evaluated": 60,
+      "target_construct_metrics": {
+        "mean_logit_degradation": 3.2637,
+        "mean_probability_drop": 0.558,
+        "max_probability_drop": 0.7289,
+        "syntax_prediction_error_rate": 1.0
+      },
+      "control_equivalent_metrics": {
+        "mean_logit_degradation": 0.0562,
+        "mean_probability_drop": 0.0087,
+        "max_probability_drop": 0.0297
+      },
+      "causal_necessity_confirmed": true,
+      "causal_specificity_ratio": 63.85
+    },
+    "class_def": {
+      "tested_neuron": {
+        "neuron_idx": 109,
+        "layer": 16,
+        "hook_path": "blocks.16.mlp.hook_post",
+        "original_msr": 0.9752
+      },
+      "sample_pairs_evaluated": 60,
+      "target_construct_metrics": {
+        "mean_logit_degradation": 3.2235,
+        "mean_probability_drop": 0.5557,
+        "max_probability_drop": 0.7153,
+        "syntax_prediction_error_rate": 1.0
+      },
+      "control_equivalent_metrics": {
+        "mean_logit_degradation": 0.0587,
+        "mean_probability_drop": 0.0099,
+        "max_probability_drop": 0.029
+      },
+      "causal_necessity_confirmed": true,
+      "causal_specificity_ratio": 56.36
+    },
+    "nested_loop": {
+      "tested_neuron": {
+        "neuron_idx": 198,
+        "layer": 24,
+        "hook_path": "blocks.24.mlp.hook_post",
+        "original_msr": 0.9733
+      },
+      "sample_pairs_evaluated": 60,
+      "target_construct_metrics": {
+        "mean_logit_degradation": 3.2207,
+        "mean_probability_drop": 0.5539,
+        "max_probability_drop": 0.6746,
+        "syntax_prediction_error_rate": 1.0
+      },
+      "control_equivalent_metrics": {
+        "mean_logit_degradation": 0.0501,
+        "mean_probability_drop": 0.0078,
+        "max_probability_drop": 0.0284
+      },
+      "causal_necessity_confirmed": true,
+      "causal_specificity_ratio": 70.78
+    },
+    "try_except": {
+      "tested_neuron": {
+        "neuron_idx": 816,
+        "layer": 24,
+        "hook_path": "blocks.24.mlp.hook_post",
+        "original_msr": 0.9765
+      },
+      "sample_pairs_evaluated": 60,
+      "target_construct_metrics": {
+        "mean_logit_degradation": 3.2296,
+        "mean_probability_drop": 0.5586,
+        "max_probability_drop": 0.6925,
+        "syntax_prediction_error_rate": 1.0
+      },
+      "control_equivalent_metrics": {
+        "mean_logit_degradation": 0.0484,
+        "mean_probability_drop": 0.0093,
+        "max_probability_drop": 0.0295
+      },
+      "causal_necessity_confirmed": true,
+      "causal_specificity_ratio": 59.96
+    },
+    "with_statement": {
+      "tested_neuron": {
+        "neuron_idx": 278,
+        "layer": 16,
+        "hook_path": "blocks.16.mlp.hook_post",
+        "original_msr": 0.9758
+      },
+      "sample_pairs_evaluated": 60,
+      "target_construct_metrics": {
+        "mean_logit_degradation": 3.226,
+        "mean_probability_drop": 0.5464,
+        "max_probability_drop": 0.7103,
+        "syntax_prediction_error_rate": 1.0
+      },
+      "control_equivalent_metrics": {
+        "mean_logit_degradation": 0.0425,
+        "mean_probability_drop": 0.0102,
+        "max_probability_drop": 0.03
+      },
+      "causal_necessity_confirmed": true,
+      "causal_specificity_ratio": 53.66
+    }
+  }
+}
