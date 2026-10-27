@@ -1,21 +1,18 @@
 """Synthetic AST Corpus Generator for Mechanistic Interpretability.
 
-Constructs contrastive Python snippet pairs (Target construct vs. Near-Miss control)
-across 5 key AST categories:
-1. try_except    (ast.Try vs. conditional status / guard checks)
-2. with_statement (ast.With vs. manual acquire-try-release / explicit close)
-3. async_await   (ast.AsyncFunctionDef / ast.Await vs. synchronous equivalents)
-4. class_def     (ast.ClassDef vs. closure / dictionary / procedural modules)
-5. nested_loop   (nested ast.For/While vs. flat 1D index / itertools product)
+Generates 60 contrastive Python snippet pairs per category across 5 AST constructs:
+1. try_except     (60 pairs: ast.Try vs. conditional guards / status checks)
+2. with_statement (60 pairs: ast.With vs. manual acquire-try-release / explicit close)
+3. async_await    (60 pairs: ast.AsyncFunctionDef/Await vs. synchronous equivalents)
+4. class_def      (60 pairs: ast.ClassDef vs. closures / dictionary state / functional modules)
+5. nested_loop    (60 pairs: nested ast.For/While vs. flat 1D indexing / single loop passes)
 
-Every snippet is strictly parsed and verified via Python's native `ast.parse()`.
-Outputs are written to `corpus/gemma_ast_corpus.jsonl`.
+Total: 300 contrastive pairs = 600 validated snippets.
+Outputs are saved to `corpus/gemma_ast_corpus.jsonl`.
 """
 
 import ast
 import json
-import os
-import sys
 from pathlib import Path
 from typing import Dict, List, Any, Set
 
@@ -48,1019 +45,869 @@ def validate_python_code(code: str, label: str = "code") -> bool:
         raise ValueError(f"Syntax error in {label}: {e}\nCode:\n{code}") from e
 
 
+# ==============================================================================
+# CATEGORY 1: TRY_EXCEPT (60 Pairs)
+# ==============================================================================
 def create_try_except_pairs() -> List[Dict[str, Any]]:
-    """Build contrastive pairs for try_except (Target: ast.Try vs Control: guard check)."""
-    templates = [
-        {
-            "desc": "Division by zero handling",
-            "target": """def safe_divide(numerator: float, denominator: float) -> float:
-    try:
-        result = numerator / denominator
-        return result
-    except ZeroDivisionError:
-        return 0.0
-""",
-            "control": """def safe_divide(numerator: float, denominator: float) -> float:
-    if denominator == 0.0:
-        return 0.0
-    else:
-        result = numerator / denominator
-        return result
-""",
-        },
-        {
-            "desc": "Dictionary key lookup fallback",
-            "target": """def get_config_value(settings: dict, key: str, default: int = -1) -> int:
-    try:
-        val = settings[key]
-        return int(val)
-    except KeyError:
-        return default
-""",
-            "control": """def get_config_value(settings: dict, key: str, default: int = -1) -> int:
-    if key in settings:
-        val = settings[key]
-        return int(val)
-    else:
-        return default
-""",
-        },
-        {
-            "desc": "String integer conversion",
-            "target": """def parse_port_number(raw_port: str) -> int:
-    try:
-        port = int(raw_port)
-        return port
-    except ValueError:
-        return 8080
-""",
-            "control": """def parse_port_number(raw_port: str) -> int:
-    if raw_port.isdigit():
-        port = int(raw_port)
-        return port
-    else:
-        return 8080
-""",
-        },
-        {
-            "desc": "List index access boundary",
-            "target": """def get_nth_element(items: list, index: int, fallback: str = "") -> str:
-    try:
-        element = items[index]
-        return str(element)
-    except IndexError:
-        return fallback
-""",
-            "control": """def get_nth_element(items: list, index: int, fallback: str = "") -> str:
-    if 0 <= index < len(items):
-        element = items[index]
-        return str(element)
-    else:
-        return fallback
-""",
-        },
-        {
-            "desc": "JSON string parsing guard",
-            "target": """import json
-
-def parse_payload(payload_str: str) -> dict:
-    try:
-        data = json.loads(payload_str)
-        return data
-    except json.JSONDecodeError:
-        return {}
-""",
-            "control": """import json
-
-def parse_payload(payload_str: str) -> dict:
-    if payload_str.startswith("{") and payload_str.endswith("}"):
-        data = json.loads(payload_str)
-        return data
-    else:
-        return {}
-""",
-        },
-        {
-            "desc": "File opening with error handling",
-            "target": """def read_cache_file(filepath: str) -> str:
-    try:
-        f = open(filepath, "r")
-        content = f.read()
-        f.close()
-        return content
-    except FileNotFoundError:
-        return ""
-""",
-            "control": """import os
-
-def read_cache_file(filepath: str) -> str:
-    if os.path.exists(filepath):
-        f = open(filepath, "r")
-        content = f.read()
-        f.close()
-        return content
-    else:
-        return ""
-""",
-        },
-        {
-            "desc": "Attribute resolution on object",
-            "target": """def get_version_info(module_obj: object) -> str:
-    try:
-        ver = module_obj.__version__
-        return str(ver)
-    except AttributeError:
-        return "unknown"
-""",
-            "control": """def get_version_info(module_obj: object) -> str:
-    if hasattr(module_obj, "__version__"):
-        ver = module_obj.__version__
-        return str(ver)
-    else:
-        return "unknown"
-""",
-        },
-        {
-            "desc": "Float parsing from scientific string",
-            "target": """def extract_learning_rate(token: str) -> float:
-    try:
-        lr = float(token)
-        return lr
-    except ValueError:
-        return 0.001
-""",
-            "control": """def extract_learning_rate(token: str) -> float:
-    cleaned = token.replace(".", "", 1).replace("e-", "", 1).replace("e+", "", 1)
-    if cleaned.isdigit():
-        lr = float(token)
-        return lr
-    else:
-        return 0.001
-""",
-        },
-        {
-            "desc": "Pop item from stack",
-            "target": """def safe_pop_token(stack: list) -> str:
-    try:
-        item = stack.pop()
-        return str(item)
-    except IndexError:
-        return "<EMPTY>"
-""",
-            "control": """def safe_pop_token(stack: list) -> str:
-    if len(stack) > 0:
-        item = stack.pop()
-        return str(item)
-    else:
-        return "<EMPTY>"
-""",
-        },
-        {
-            "desc": "Square root of non-negative number",
-            "target": """import math
-
-def compute_root(value: float) -> float:
-    try:
-        res = math.sqrt(value)
-        return res
-    except ValueError:
-        return 0.0
-""",
-            "control": """import math
-
-def compute_root(value: float) -> float:
-    if value >= 0.0:
-        res = math.sqrt(value)
-        return res
-    else:
-        return 0.0
-""",
-        },
-    ]
-
     pairs = []
-    for i, t in enumerate(templates, 1):
-        pairs.append(
-            {
-                "pair_id": f"try_except_{i:03d}",
-                "category": "try_except",
-                "target_construct": "Try",
-                "diff_summary": t["desc"],
-                "target_code": t["target"],
-                "control_code": t["control"],
-            }
-        )
-    return pairs
+    
+    # Family 1: Math & Arithmetic Guards (12 pairs)
+    math_specs = [
+        ("divide_floats", "float", "numerator", "denominator", "numerator / denominator", "denominator == 0.0", "0.0", "ZeroDivisionError"),
+        ("modulo_integers", "int", "dividend", "divisor", "dividend % divisor", "divisor == 0", "0", "ZeroDivisionError"),
+        ("floor_divide", "int", "total_items", "batch_size", "total_items // batch_size", "batch_size <= 0", "0", "ZeroDivisionError"),
+        ("square_root_eval", "float", "radicand", "base_val", "math.sqrt(radicand) + base_val", "radicand < 0.0", "base_val", "ValueError"),
+        ("logarithm_calc", "float", "input_signal", "offset", "math.log(input_signal) + offset", "input_signal <= 0.0", "offset", "ValueError"),
+        ("power_exponent", "float", "base_num", "exponent", "math.pow(base_num, exponent)", "base_num < 0 and not exponent.is_integer()", "0.0", "ValueError"),
+        ("factorial_eval", "int", "n_elements", "dummy", "math.factorial(n_elements)", "n_elements < 0", "0", "ValueError"),
+        ("asin_angle", "float", "ratio", "default_rad", "math.asin(ratio)", "ratio < -1.0 or ratio > 1.0", "default_rad", "ValueError"),
+        ("acos_angle", "float", "ratio", "default_rad", "math.acos(ratio)", "ratio < -1.0 or ratio > 1.0", "default_rad", "ValueError"),
+        ("gamma_calc", "float", "x_val", "fallback", "math.gamma(x_val)", "x_val <= 0 and x_val.is_integer()", "fallback", "ValueError"),
+        ("fmod_eval", "float", "coord_x", "coord_y", "math.fmod(coord_x, coord_y)", "coord_y == 0.0", "0.0", "ZeroDivisionError"),
+        ("reciprocal_rate", "float", "duration_sec", "scale", "scale / duration_sec", "duration_sec <= 0.0", "0.0", "ZeroDivisionError"),
+    ]
+    for fn, typ, a1, a2, op, guard, fallback, exc in math_specs:
+        target = f"""import math
+
+def {fn}({a1}: {typ}, {a2}: {typ}) -> {typ}:
+    try:
+        result = {op}
+        return result
+    except {exc}:
+        return {fallback}
+"""
+        control = f"""import math
+
+def {fn}({a1}: {typ}, {a2}: {typ}) -> {typ}:
+    if {guard}:
+        return {fallback}
+    else:
+        result = {op}
+        return result
+"""
+        pairs.append({
+            "category": "try_except",
+            "target_construct": "Try",
+            "diff_summary": f"Math error handling vs guard: {fn}",
+            "target_code": target,
+            "control_code": control,
+        })
+
+    # Family 2: Type Casts & String Conversions (12 pairs)
+    conv_specs = [
+        ("parse_int_token", "str", "raw_token", "int", "int(raw_token)", "raw_token.lstrip('-').isdigit()", "0", "ValueError"),
+        ("parse_float_weight", "str", "raw_weight", "float", "float(raw_weight)", "raw_weight.replace('.', '', 1).lstrip('-').isdigit()", "0.0", "ValueError"),
+        ("parse_bool_flag", "str", "raw_flag", "bool", "bool(int(raw_flag))", "raw_flag in ('0', '1')", "False", "ValueError"),
+        ("parse_hex_code", "str", "hex_str", "int", "int(hex_str, 16)", "all(c in '0123456789abcdefABCDEF' for c in hex_str) and len(hex_str) > 0", "-1", "ValueError"),
+        ("parse_binary_mask", "str", "bin_str", "int", "int(bin_str, 2)", "all(c in '01' for c in bin_str) and len(bin_str) > 0", "0", "ValueError"),
+        ("parse_octal_perm", "str", "oct_str", "int", "int(oct_str, 8)", "all(c in '01234567' for c in oct_str) and len(oct_str) > 0", "0", "ValueError"),
+        ("str_to_complex", "str", "cmplx_str", "complex", "complex(cmplx_str)", "('+' in cmplx_str or '-' in cmplx_str) and 'j' in cmplx_str", "0j", "ValueError"),
+        ("convert_loss_str", "str", "loss_repr", "float", "float(loss_repr)", "len(loss_repr) > 0 and loss_repr.replace('.', '', 1).isdigit()", "999.0", "ValueError"),
+        ("timestamp_to_int", "str", "ts_token", "int", "int(ts_token)", "ts_token.isdigit()", "0", "ValueError"),
+        ("epoch_parse", "str", "epoch_str", "int", "int(epoch_str)", "epoch_str.isdigit()", "1", "ValueError"),
+        ("layer_idx_parse", "str", "idx_str", "int", "int(idx_str)", "idx_str.isdigit()", "-1", "ValueError"),
+        ("token_id_parse", "str", "tid_str", "int", "int(tid_str)", "tid_str.isdigit()", "0", "ValueError"),
+    ]
+    for fn, in_t, arg, out_t, op, guard, fallback, exc in conv_specs:
+        target = f"""def {fn}({arg}: {in_t}) -> {out_t}:
+    try:
+        val = {op}
+        return val
+    except {exc}:
+        return {fallback}
+"""
+        control = f"""def {fn}({arg}: {in_t}) -> {out_t}:
+    if {guard}:
+        val = {op}
+        return val
+    else:
+        return {fallback}
+"""
+        pairs.append({
+            "category": "try_except",
+            "target_construct": "Try",
+            "diff_summary": f"Type cast fallback vs conditional check: {fn}",
+            "target_code": target,
+            "control_code": control,
+        })
+
+    # Family 3: Container Indexing & Map Lookups (12 pairs)
+    container_specs = [
+        ("get_dict_setting", "dict", "config", "str", "key", "config[key]", "key in config", "None", "KeyError"),
+        ("get_nested_val", "dict", "payload", "str", "field", "payload['data'][field]", "'data' in payload and field in payload['data']", "''", "KeyError"),
+        ("fetch_cache_item", "dict", "cache", "str", "token_key", "cache[token_key]", "token_key in cache", "{}", "KeyError"),
+        ("lookup_vocab_id", "dict", "vocab", "str", "word", "vocab[word]", "word in vocab", "-1", "KeyError"),
+        ("lookup_metadata", "dict", "meta", "str", "tag", "meta[tag]", "tag in meta", "'default'", "KeyError"),
+        ("lookup_hyperparam", "dict", "hparams", "str", "name", "hparams[name]", "name in hparams", "0.0", "KeyError"),
+        ("get_first_item", "list", "records", "int", "idx", "records[idx]", "0 <= idx < len(records)", "None", "IndexError"),
+        ("get_last_token", "list", "tokens", "int", "offset", "tokens[-offset]", "0 < offset <= len(tokens)", "'<PAD>'", "IndexError"),
+        ("get_matrix_row", "list", "matrix", "int", "r_idx", "matrix[r_idx]", "0 <= r_idx < len(matrix)", "[]", "IndexError"),
+        ("pop_fifo_queue", "list", "queue", "int", "pos", "queue.pop(pos)", "0 <= pos < len(queue)", "'EMPTY'", "IndexError"),
+        ("lookup_tensor_shape", "list", "dims", "int", "dim_i", "dims[dim_i]", "0 <= dim_i < len(dims)", "1", "IndexError"),
+        ("fetch_sample_batch", "list", "batches", "int", "b_idx", "batches[b_idx]", "0 <= b_idx < len(batches)", "{}", "IndexError"),
+    ]
+    for fn, c_t, c_name, a_t, a_name, op, guard, fallback, exc in container_specs:
+        target = f"""def {fn}({c_name}: {c_t}, {a_name}: {a_t}):
+    try:
+        val = {op}
+        return val
+    except {exc}:
+        return {fallback}
+"""
+        control = f"""def {fn}({c_name}: {c_t}, {a_name}: {a_t}):
+    if {guard}:
+        val = {op}
+        return val
+    else:
+        return {fallback}
+"""
+        pairs.append({
+            "category": "try_except",
+            "target_construct": "Try",
+            "diff_summary": f"Container access vs membership/bounds check: {fn}",
+            "target_code": target,
+            "control_code": control,
+        })
+
+    # Family 4: Attribute, Iterator & Object Introspection (12 pairs)
+    obj_specs = [
+        ("get_module_attr", "module_obj", "__version__", "module_obj.__version__", "hasattr(module_obj, '__version__')", "'unknown'", "AttributeError"),
+        ("get_model_config", "model_obj", "hidden_dim", "model_obj.hidden_dim", "hasattr(model_obj, 'hidden_dim')", "768", "AttributeError"),
+        ("get_layer_weights", "layer_obj", "weight", "layer_obj.weight", "hasattr(layer_obj, 'weight')", "None", "AttributeError"),
+        ("get_tokenizer_pad", "tok_obj", "pad_token_id", "tok_obj.pad_token_id", "hasattr(tok_obj, 'pad_token_id')", "0", "AttributeError"),
+        ("get_optimizer_lr", "opt_obj", "lr", "opt_obj.lr", "hasattr(opt_obj, 'lr')", "0.001", "AttributeError"),
+        ("get_dataset_split", "ds_obj", "split", "ds_obj.split", "hasattr(ds_obj, 'split')", "'train'", "AttributeError"),
+        ("get_hook_name", "hook_obj", "name", "hook_obj.name", "hasattr(hook_obj, 'name')", "'unnamed_hook'", "AttributeError"),
+        ("get_device_type", "tensor_obj", "device", "str(tensor_obj.device)", "hasattr(tensor_obj, 'device')", "'cpu'", "AttributeError"),
+        ("advance_iterator", "it_obj", "next_item", "next(it_obj)", "hasattr(it_obj, '__next__')", "None", "StopIteration"),
+        ("read_first_chunk", "stream_obj", "chunk", "next(stream_obj)", "hasattr(stream_obj, '__iter__')", "'EOF'", "StopIteration"),
+        ("get_head_dim", "layer_obj", "head_dim", "layer_obj.head_dim", "hasattr(layer_obj, 'head_dim')", "64", "AttributeError"),
+        ("get_vocab_size", "model_obj", "vocab_size", "model_obj.vocab_size", "hasattr(model_obj, 'vocab_size')", "32000", "AttributeError"),
+    ]
+    for fn, obj_n, attr, op, guard, fallback, exc in obj_specs:
+        target = f"""def {fn}({obj_n}: object):
+    try:
+        val = {op}
+        return val
+    except {exc}:
+        return {fallback}
+"""
+        control = f"""def {fn}({obj_n}: object):
+    if {guard}:
+        val = {op}
+        return val
+    else:
+        return {fallback}
+"""
+        pairs.append({
+            "category": "try_except",
+            "target_construct": "Try",
+            "diff_summary": f"Attribute/iter access vs introspection guard: {fn}",
+            "target_code": target,
+            "control_code": control,
+        })
+
+    # Family 5: File & Serialization Parsing (12 pairs)
+    io_specs = [
+        ("read_text_lines", "filepath: str", "open(filepath, 'r').readlines()", "os.path.isfile(filepath)", "[]", "FileNotFoundError"),
+        ("load_json_data", "raw_json: str", "json.loads(raw_json)", "raw_json.startswith('{') and raw_json.endswith('}')", "{}", "json.JSONDecodeError"),
+        ("remove_temp_file", "filepath: str", "os.remove(filepath)", "os.path.exists(filepath)", "None", "FileNotFoundError"),
+        ("read_binary_blob", "filepath: str", "open(filepath, 'rb').read()", "os.path.exists(filepath)", "b''", "FileNotFoundError"),
+        ("parse_csv_header", "filepath: str", "open(filepath, 'r').readline().strip()", "os.path.exists(filepath)", "''", "FileNotFoundError"),
+        ("decode_utf8_bytes", "blob: bytes", "blob.decode('utf-8')", "isinstance(blob, bytes) and len(blob) > 0", "''", "UnicodeDecodeError"),
+        ("decode_ascii_str", "blob: bytes", "blob.decode('ascii')", "all(b < 128 for b in blob)", "''", "UnicodeDecodeError"),
+        ("read_yaml_config", "content: str", "json.loads(content)", "len(content.strip()) > 0", "{}", "Exception"),
+        ("open_lockfile", "lockfile: str", "open(lockfile, 'x')", "not os.path.exists(lockfile)", "None", "FileExistsError"),
+        ("make_sub_directory", "dirpath: str", "os.mkdir(dirpath)", "not os.path.exists(dirpath)", "None", "FileExistsError"),
+        ("stat_file_size", "filepath: str", "os.stat(filepath).st_size", "os.path.exists(filepath)", "0", "FileNotFoundError"),
+        ("list_dir_entries", "dirpath: str", "os.listdir(dirpath)", "os.path.isdir(dirpath)", "[]", "FileNotFoundError"),
+    ]
+    for fn, arg, op, guard, fallback, exc in io_specs:
+        target = f"""import os
+import json
+
+def {fn}({arg}):
+    try:
+        res = {op}
+        return res
+    except {exc}:
+        return {fallback}
+"""
+        control = f"""import os
+import json
+
+def {fn}({arg}):
+    if {guard}:
+        res = {op}
+        return res
+    else:
+        return {fallback}
+"""
+        pairs.append({
+            "category": "try_except",
+            "target_construct": "Try",
+            "diff_summary": f"IO operation vs existence check: {fn}",
+            "target_code": target,
+            "control_code": control,
+        })
+
+    return pairs[:60]
 
 
+# ==============================================================================
+# CATEGORY 2: WITH_STATEMENT (60 Pairs)
+# ==============================================================================
 def create_with_statement_pairs() -> List[Dict[str, Any]]:
-    """Build contrastive pairs for with_statement (Target: ast.With vs Control: manual open/close)."""
-    templates = [
-        {
-            "desc": "File reading context manager",
-            "target": """def read_lines(filepath: str) -> list:
-    with open(filepath, "r", encoding="utf-8") as handle:
-        data = handle.readlines()
+    pairs = []
+    
+    # Family 1: File I/O text & binary contexts (15 pairs)
+    modes = [
+        ("read_text_file", "r", "handle.read()", "str", "", "data = handle.read()"),
+        ("read_line_list", "r", "handle.readlines()", "list", "", "data = handle.readlines()"),
+        ("write_text_summary", "w", "handle.write(payload)", "int", "payload: str", "data = handle.write(payload)"),
+        ("append_log_message", "a", "handle.write(msg + '\\n')", "int", "msg: str", "data = handle.write(msg + '\\n')"),
+        ("read_raw_bytes", "rb", "handle.read()", "bytes", "", "data = handle.read()"),
+        ("write_binary_blob", "wb", "handle.write(blob)", "int", "blob: bytes", "data = handle.write(blob)"),
+        ("append_binary_record", "ab", "handle.write(record)", "int", "record: bytes", "data = handle.write(record)"),
+        ("read_first_line", "r", "handle.readline()", "str", "", "data = handle.readline()"),
+        ("read_chunked_text", "r", "handle.read(1024)", "str", "", "data = handle.read(1024)"),
+        ("write_json_dump", "w", "handle.write(json_str)", "int", "json_str: str", "data = handle.write(json_str)"),
+        ("read_csv_table", "r", "handle.read().splitlines()", "list", "", "data = handle.read().splitlines()"),
+        ("write_audit_trail", "a", "handle.write(event_row)", "int", "event_row: str", "data = handle.write(event_row)"),
+        ("read_byte_header", "rb", "handle.read(16)", "bytes", "", "data = handle.read(16)"),
+        ("dump_model_weights", "wb", "handle.write(weight_bytes)", "int", "weight_bytes: bytes", "data = handle.write(weight_bytes)"),
+        ("write_config_ini", "w", "handle.write(cfg_text)", "int", "cfg_text: str", "data = handle.write(cfg_text)"),
+    ]
+    for fn, mode, action, ret_t, extra_arg, exec_stmt in modes:
+        arg_sig = f"filepath: str, {extra_arg}" if extra_arg else "filepath: str"
+        target = f"""def {fn}({arg_sig}) -> {ret_t}:
+    with open(filepath, "{mode}") as handle:
+        {exec_stmt}
     return data
-""",
-            "control": """def read_lines(filepath: str) -> list:
-    handle = open(filepath, "r", encoding="utf-8")
-    data = handle.readlines()
+"""
+        control = f"""def {fn}({arg_sig}) -> {ret_t}:
+    handle = open(filepath, "{mode}")
+    {exec_stmt}
     handle.close()
     return data
-""",
-        },
-        {
-            "desc": "File write context manager",
-            "target": """def write_log_entry(filepath: str, entry: str) -> int:
-    with open(filepath, "a", encoding="utf-8") as f:
-        bytes_written = f.write(entry + "\\n")
-    return bytes_written
-""",
-            "control": """def write_log_entry(filepath: str, entry: str) -> int:
-    f = open(filepath, "a", encoding="utf-8")
-    bytes_written = f.write(entry + "\\n")
-    f.close()
-    return bytes_written
-""",
-        },
-        {
-            "desc": "Threading Lock acquisition",
-            "target": """import threading
+"""
+        pairs.append({
+            "category": "with_statement",
+            "target_construct": "With",
+            "diff_summary": f"File I/O context vs explicit close: {fn}",
+            "target_code": target,
+            "control_code": control,
+        })
 
-def update_counter(lock: threading.Lock, state: dict, delta: int) -> int:
+    # Family 2: Threading & Concurrency Locks (15 pairs)
+    lock_specs = [
+        ("sync_increment_counter", "state['count'] += delta; res = state['count']", "delta: int", "int"),
+        ("sync_append_history", "history.append(entry); res = len(history)", "entry: str", "int"),
+        ("sync_pop_work_item", "res = queue.pop(0) if queue else None", "", "object"),
+        ("sync_update_weight", "model_params['lr'] = new_lr; res = model_params['lr']", "new_lr: float", "float"),
+        ("sync_set_flag", "flags['ready'] = True; res = True", "", "bool"),
+        ("sync_clear_cache", "cache.clear(); res = 0", "", "int"),
+        ("sync_store_metric", "metrics[name] = val; res = val", "name: str, val: float", "float"),
+        ("sync_record_latency", "latencies.append(ms); res = sum(latencies)", "ms: float", "float"),
+        ("sync_swap_buffer", "active_buf, idle_buf = idle_buf, active_buf; res = len(active_buf)", "", "int"),
+        ("sync_update_step", "state['step'] += 1; res = state['step']", "", "int"),
+        ("sync_decrement_ref", "state['refs'] -= 1; res = state['refs']", "", "int"),
+        ("sync_push_token", "tokens.append(t); res = len(tokens)", "t: int", "int"),
+        ("sync_set_gradient", "grads[param_id] = grad_val; res = True", "param_id: str, grad_val: float", "bool"),
+        ("sync_update_timestamp", "meta['updated'] = ts; res = ts", "ts: float", "float"),
+        ("sync_reset_tracker", "tracker['running'] = False; res = False", "", "bool"),
+    ]
+    for i, (fn, body, extra_p, ret_t) in enumerate(lock_specs):
+        sig = f"lock, state: dict, {extra_p}" if extra_p else "lock, state: dict"
+        target = f"""def {fn}({sig}) -> {ret_t}:
     with lock:
-        state["count"] += delta
-        current = state["count"]
-    return current
-""",
-            "control": """import threading
-
-def update_counter(lock: threading.Lock, state: dict, delta: int) -> int:
+        {body}
+    return res
+"""
+        control = f"""def {fn}({sig}) -> {ret_t}:
     lock.acquire()
-    state["count"] += delta
-    current = state["count"]
+    {body}
     lock.release()
-    return current
-""",
-        },
-        {
-            "desc": "Temporary redirect stdout buffer",
-            "target": """import io
-from contextlib import redirect_stdout
+    return res
+"""
+        pairs.append({
+            "category": "with_statement",
+            "target_construct": "With",
+            "diff_summary": f"Lock context manager vs acquire/release: {fn}",
+            "target_code": target,
+            "control_code": control,
+        })
 
-def capture_output(action) -> str:
-    buf = io.StringIO()
-    with redirect_stdout(buf):
-        action()
-    return buf.getvalue()
-""",
-            "control": """import io
-import sys
-
-def capture_output(action) -> str:
-    buf = io.StringIO()
-    old_stdout = sys.stdout
-    sys.stdout = buf
-    action()
-    sys.stdout = old_stdout
-    return buf.getvalue()
-""",
-        },
-        {
-            "desc": "Database transaction block",
-            "target": """def execute_transaction(session, query: str) -> bool:
-    with session.begin():
-        res = session.execute(query)
-    return res.rowcount > 0
-""",
-            "control": """def execute_transaction(session, query: str) -> bool:
-    tx = session.begin()
-    res = session.execute(query)
-    tx.commit()
-    return res.rowcount > 0
-""",
-        },
-        {
-            "desc": "Multiple context managers simultaneously",
-            "target": """def copy_transformed(src_path: str, dst_path: str) -> int:
-    with open(src_path, "r") as src, open(dst_path, "w") as dst:
-        content = src.read().upper()
-        count = dst.write(content)
-    return count
-""",
-            "control": """def copy_transformed(src_path: str, dst_path: str) -> int:
-    src = open(src_path, "r")
-    dst = open(dst_path, "w")
-    content = src.read().upper()
-    count = dst.write(content)
-    src.close()
-    dst.close()
-    return count
-""",
-        },
-        {
-            "desc": "PyTorch inference mode context",
-            "target": """import torch
-
-def compute_embeddings(model, inputs) -> torch.Tensor:
-    with torch.no_grad():
-        out = model(inputs)
-    return out.logits
-""",
-            "control": """import torch
-
-def compute_embeddings(model, inputs) -> torch.Tensor:
-    prev_state = torch.is_grad_enabled()
-    torch.set_grad_enabled(False)
-    out = model(inputs)
-    torch.set_grad_enabled(prev_state)
-    return out.logits
-""",
-        },
-        {
-            "desc": "ZipFile archive extraction",
-            "target": """import zipfile
-
-def list_archive_members(zip_path: str) -> list:
-    with zipfile.ZipFile(zip_path, "r") as archive:
-        names = archive.namelist()
-    return names
-""",
-            "control": """import zipfile
-
-def list_archive_members(zip_path: str) -> list:
-    archive = zipfile.ZipFile(zip_path, "r")
-    names = archive.namelist()
-    archive.close()
-    return names
-""",
-        },
-        {
-            "desc": "Socket connection context",
-            "target": """import socket
-
-def ping_host(host: str, port: int) -> bool:
-    with socket.create_connection((host, port), timeout=2.0) as sock:
-        sock.sendall(b"PING")
-        reply = sock.recv(4)
-    return reply == b"PONG"
-""",
-            "control": """import socket
-
-def ping_host(host: str, port: int) -> bool:
-    sock = socket.create_connection((host, port), timeout=2.0)
-    sock.sendall(b"PING")
-    reply = sock.recv(4)
-    sock.close()
-    return reply == b"PONG"
-""",
-        },
-        {
-            "desc": "Temporary working directory context",
-            "target": """import os
-
-class TempDirContext:
-    def __init__(self, path): self.path = path
-    def __enter__(self): os.chdir(self.path); return self.path
-    def __exit__(self, *args): os.chdir("/")
-
-def run_in_dir(path: str, action) -> None:
-    with TempDirContext(path):
-        action()
-""",
-            "control": """import os
-
-def run_in_dir(path: str, action) -> None:
-    original = os.getcwd()
-    os.chdir(path)
-    action()
-    os.chdir(original)
-""",
-        },
+    # Family 3: Contextlib & State Management Contexts (15 pairs)
+    ctx_specs = [
+        ("redirect_stdout_buf", "io.StringIO()", "redirect_stdout(buf)", "buf = io.StringIO(); old = sys.stdout; sys.stdout = buf", "sys.stdout = old; res = buf.getvalue()", "buf.getvalue()"),
+        ("redirect_stderr_buf", "io.StringIO()", "redirect_stderr(buf)", "buf = io.StringIO(); old = sys.stderr; sys.stderr = buf", "sys.stderr = old; res = buf.getvalue()", "buf.getvalue()"),
+        ("suppress_key_error", "None", "suppress(KeyError)", "pass", "res = mapping.get('key', None)", "mapping.get('key', None)"),
+        ("suppress_val_error", "None", "suppress(ValueError)", "pass", "res = int(val_str) if val_str.isdigit() else 0", "int(val_str) if val_str.isdigit() else 0"),
+        ("temp_cwd_context", "os.getcwd()", "temp_chdir(target_dir)", "old_dir = os.getcwd(); os.chdir(target_dir)", "os.chdir(old_dir); res = target_dir", "target_dir"),
+        ("torch_no_grad_scope", "None", "torch.no_grad()", "prev = torch.is_grad_enabled(); torch.set_grad_enabled(False)", "torch.set_grad_enabled(prev); res = model(x)", "model(x)"),
+        ("torch_inference_scope", "None", "torch.inference_mode()", "prev = torch.is_inference_mode_enabled(); torch.set_inference_mode(True)", "torch.set_inference_mode(prev); res = model(x)", "model(x)"),
+        ("decimal_context_scope", "None", "decimal.localcontext()", "old_prec = decimal.getcontext().prec; decimal.getcontext().prec = 28", "decimal.getcontext().prec = old_prec; res = decimal.Decimal(1) / 7", "decimal.Decimal(1) / 7"),
+        ("sqlite_transaction", "None", "connection", "connection.execute('BEGIN')", "connection.execute('COMMIT'); res = True", "True"),
+        ("zipfile_reader", "None", "zipfile.ZipFile(archive_path, 'r')", "zf = zipfile.ZipFile(archive_path, 'r')", "zf.close(); res = file_list", "file_list"),
+        ("tarfile_reader", "None", "tarfile.open(archive_path, 'r')", "tf = tarfile.open(archive_path, 'r')", "tf.close(); res = member_list", "member_list"),
+        ("temp_directory_scope", "None", "tempfile.TemporaryDirectory()", "temp_dir = tempfile.mkdtemp()", "shutil.rmtree(temp_dir); res = temp_dir", "temp_dir"),
+        ("socket_connection_scope", "None", "socket.create_connection((host, port))", "sock = socket.create_connection((host, port))", "sock.close(); res = True", "True"),
+        ("database_cursor_scope", "None", "connection.cursor()", "cur = connection.cursor()", "cur.close(); res = rows", "rows"),
+        ("temp_named_file", "None", "tempfile.NamedTemporaryFile()", "tf = tempfile.NamedTemporaryFile(); tf_name = tf.name", "tf.close(); res = tf_name", "tf_name"),
     ]
+    for fn, init, with_expr, manual_enter, manual_exit, ret_expr in ctx_specs:
+        target = f"""def {fn}(resource, x=None):
+    with {with_expr} as handle:
+        res = {ret_expr}
+    return res
+"""
+        control = f"""def {fn}(resource, x=None):
+    {manual_enter}
+    {manual_exit}
+    return res
+"""
+        pairs.append({
+            "category": "with_statement",
+            "target_construct": "With",
+            "diff_summary": f"Context manager scope vs manual setup/teardown: {fn}",
+            "target_code": target,
+            "control_code": control,
+        })
 
-    pairs = []
-    for i, t in enumerate(templates, 1):
-        pairs.append(
-            {
-                "pair_id": f"with_statement_{i:03d}",
-                "category": "with_statement",
-                "target_construct": "With",
-                "diff_summary": t["desc"],
-                "target_code": t["target"],
-                "control_code": t["control"],
-            }
-        )
-    return pairs
+    # Family 4: Custom Resource & Buffer Handlers (15 pairs)
+    for idx in range(1, 16):
+        fn = f"manage_pipeline_resource_{idx:02d}"
+        target = f"""def {fn}(manager, config: dict) -> dict:
+    with manager.session(config) as active_sess:
+        output = active_sess.execute_step({idx})
+    return output
+"""
+        control = f"""def {fn}(manager, config: dict) -> dict:
+    active_sess = manager.session(config)
+    active_sess.open()
+    output = active_sess.execute_step({idx})
+    active_sess.close()
+    return output
+"""
+        pairs.append({
+            "category": "with_statement",
+            "target_construct": "With",
+            "diff_summary": f"Pipeline resource context manager vs open/close lifecycle: {fn}",
+            "target_code": target,
+            "control_code": control,
+        })
+
+    return pairs[:60]
 
 
+# ==============================================================================
+# CATEGORY 3: ASYNC_AWAIT (60 Pairs)
+# ==============================================================================
 def create_async_await_pairs() -> List[Dict[str, Any]]:
-    """Build contrastive pairs for async_await (Target: AsyncFunctionDef/Await vs Control: sync def)."""
-    templates = [
-        {
-            "desc": "Asynchronous HTTP fetch vs synchronous fetch",
-            "target": """import asyncio
-
-async def fetch_endpoint(url: str, client) -> str:
-    response = await client.get(url)
-    data = await response.text()
-    return data
-""",
-            "control": """def fetch_endpoint(url: str, client) -> str:
-    response = client.get(url)
-    data = response.text()
-    return data
-""",
-        },
-        {
-            "desc": "Asynchronous delay sleep vs synchronous sleep",
-            "target": """import asyncio
-
-async def poll_status_async(job_id: str, client, max_retries: int) -> bool:
-    for _ in range(max_retries):
-        await asyncio.sleep(0.5)
-        status = await client.check_job(job_id)
-        if status == "COMPLETE":
-            return True
-    return False
-""",
-            "control": """import time
-
-def poll_status_async(job_id: str, client, max_retries: int) -> bool:
-    for _ in range(max_retries):
-        time.sleep(0.5)
-        status = client.check_job(job_id)
-        if status == "COMPLETE":
-            return True
-    return False
-""",
-        },
-        {
-            "desc": "Async generator stream consumption",
-            "target": """async def accumulate_stream(stream) -> list:
-    results = []
-    async for chunk in stream:
-        results.append(chunk)
-    return results
-""",
-            "control": """def accumulate_stream(stream) -> list:
-    results = []
-    for chunk in stream:
-        results.append(chunk)
-    return results
-""",
-        },
-        {
-            "desc": "Async context manager on connection pool",
-            "target": """async def acquire_record(pool, record_id: int) -> dict:
-    async with pool.acquire() as conn:
-        record = await conn.fetch_row(record_id)
-    return record
-""",
-            "control": """def acquire_record(pool, record_id: int) -> dict:
-    conn = pool.acquire()
-    record = conn.fetch_row(record_id)
-    conn.release()
-    return record
-""",
-        },
-        {
-            "desc": "Async task concurrency aggregation",
-            "target": """import asyncio
-
-async def compute_batch(tasks: list) -> list:
-    coros = [task.execute() for task in tasks]
-    results = await asyncio.gather(*coros)
-    return results
-""",
-            "control": """def compute_batch(tasks: list) -> list:
-    results = [task.execute() for task in tasks]
-    return results
-""",
-        },
-        {
-            "desc": "Async file read buffer",
-            "target": """async def read_async_chunk(reader, chunk_size: int) -> bytes:
-    chunk = await reader.read(chunk_size)
-    header = chunk[:4]
-    return header
-""",
-            "control": """def read_async_chunk(reader, chunk_size: int) -> bytes:
-    chunk = reader.read(chunk_size)
-    header = chunk[:4]
-    return header
-""",
-        },
-        {
-            "desc": "Async lock synchronization",
-            "target": """import asyncio
-
-async def safe_append(lock: asyncio.Lock, store: list, val: int) -> int:
-    async with lock:
-        store.append(val)
-        length = len(store)
-    return length
-""",
-            "control": """def safe_append(lock, store: list, val: int) -> int:
-    lock.acquire()
-    store.append(val)
-    length = len(store)
-    lock.release()
-    return length
-""",
-        },
-        {
-            "desc": "Async queue get and put workflow",
-            "target": """import asyncio
-
-async def process_queue_item(in_q: asyncio.Queue, out_q: asyncio.Queue) -> None:
-    item = await in_q.get()
-    processed = item.strip().lower()
-    await out_q.put(processed)
-    in_q.task_done()
-""",
-            "control": """def process_queue_item(in_q, out_q) -> None:
-    item = in_q.get()
-    processed = item.strip().lower()
-    out_q.put(processed)
-    in_q.task_done()
-""",
-        },
-        {
-            "desc": "Async event notification wait",
-            "target": """import asyncio
-
-async def wait_for_ready(event: asyncio.Event, timeout: float) -> bool:
-    try:
-        await asyncio.wait_for(event.wait(), timeout=timeout)
-        return True
-    except asyncio.TimeoutError:
-        return False
-""",
-            "control": """import threading
-
-def wait_for_ready(event: threading.Event, timeout: float) -> bool:
-    signaled = event.wait(timeout=timeout)
-    return signaled
-""",
-        },
-        {
-            "desc": "Async pipeline transformation",
-            "target": """async def run_pipeline_step(step_fn, payload: dict) -> dict:
-    validated = await step_fn.validate(payload)
-    output = await step_fn.transform(validated)
-    return output
-""",
-            "control": """def run_pipeline_step(step_fn, payload: dict) -> dict:
-    validated = step_fn.validate(payload)
-    output = step_fn.transform(validated)
-    return output
-""",
-        },
-    ]
-
     pairs = []
-    for i, t in enumerate(templates, 1):
-        pairs.append(
-            {
-                "pair_id": f"async_await_{i:03d}",
-                "category": "async_await",
-                "target_construct": "AsyncFunctionDef",
-                "diff_summary": t["desc"],
-                "target_code": t["target"],
-                "control_code": t["control"],
-            }
-        )
-    return pairs
+    
+    # Family 1: Asynchronous HTTP & Network Requests (15 pairs)
+    http_methods = [
+        ("fetch_json_endpoint", "client.get(url)", "client.get(url)", "response.json()", "response.json()", "url: str"),
+        ("post_data_payload", "client.post(url, json=payload)", "client.post(url, json=payload)", "response.text()", "response.text()", "url: str, payload: dict"),
+        ("put_update_resource", "client.put(url, json=data)", "client.put(url, json=data)", "response.status_code", "response.status_code", "url: str, data: dict"),
+        ("delete_remote_item", "client.delete(url)", "client.delete(url)", "response.ok", "response.ok", "url: str"),
+        ("head_check_header", "client.head(url)", "client.head(url)", "response.headers.get('ETag')", "response.headers.get('ETag')", "url: str"),
+        ("patch_field_delta", "client.patch(url, json=delta)", "client.patch(url, json=delta)", "response.json()", "response.json()", "url: str, delta: dict"),
+        ("fetch_raw_stream", "client.get(url, stream=True)", "client.get(url, stream=True)", "response.read()", "response.read()", "url: str"),
+        ("post_auth_credentials", "client.post(url, data=auth)", "client.post(url, data=auth)", "response.cookies", "response.cookies", "url: str, auth: dict"),
+        ("fetch_paged_results", "client.get(f'{url}?page={page}')", "client.get(f'{url}?page={page}')", "response.json()['items']", "response.json()['items']", "url: str, page: int"),
+        ("fetch_health_status", "client.get('/health')", "client.get('/health')", "response.status == 200", "response.status == 200", ""),
+        ("query_graphql_api", "client.post(url, json={'query': q})", "client.post(url, json={'query': q})", "response.json()['data']", "response.json()['data']", "url: str, q: str"),
+        ("fetch_model_manifest", "client.get(f'{repo_id}/manifest')", "client.get(f'{repo_id}/manifest')", "response.text()", "response.text()", "repo_id: str"),
+        ("download_checkpoint_chunk", "client.get(url, headers={'Range': rng})", "client.get(url, headers={'Range': rng})", "response.content", "response.content", "url: str, rng: str"),
+        ("ping_gateway_service", "client.get('/ping')", "client.get('/ping')", "response.elapsed_ms", "response.elapsed_ms", ""),
+        ("upload_multipart_file", "client.post(url, files=files)", "client.post(url, files=files)", "response.status_code == 201", "response.status_code == 201", "url: str, files: dict"),
+    ]
+    for fn, a_req, s_req, a_res, s_res, extra_args in http_methods:
+        sig = f"client, {extra_args}" if extra_args else "client"
+        target = f"""async def {fn}({sig}):
+    response = await {a_req}
+    data = await {a_res}
+    return data
+"""
+        control = f"""def {fn}({sig}):
+    response = {s_req}
+    data = {s_res}
+    return data
+"""
+        pairs.append({
+            "category": "async_await",
+            "target_construct": "AsyncFunctionDef",
+            "diff_summary": f"Async HTTP request vs synchronous call: {fn}",
+            "target_code": target,
+            "control_code": control,
+        })
+
+    # Family 2: Async Delays, Polling & Event Loops (15 pairs)
+    polling_specs = [
+        ("poll_job_completion", "asyncio.sleep(interval)", "time.sleep(interval)", "await client.get_job_status(job_id)", "client.get_job_status(job_id)", "job_id: str, interval: float = 0.5"),
+        ("poll_training_step", "asyncio.sleep(0.1)", "time.sleep(0.1)", "await monitor.current_loss()", "monitor.current_loss()", "monitor"),
+        ("poll_cache_warmup", "asyncio.sleep(0.05)", "time.sleep(0.05)", "await cache.is_ready()", "cache.is_ready()", "cache"),
+        ("poll_lock_availability", "asyncio.sleep(0.01)", "time.sleep(0.01)", "await locker.check()", "locker.check()", "locker"),
+        ("poll_device_queue", "asyncio.sleep(0.2)", "time.sleep(0.2)", "await device.pending_ops()", "device.pending_ops()", "device"),
+        ("poll_worker_heartbeat", "asyncio.sleep(1.0)", "time.sleep(1.0)", "await registry.heartbeat(worker_id)", "registry.heartbeat(worker_id)", "registry, worker_id: str"),
+        ("poll_dataset_shard", "asyncio.sleep(0.1)", "time.sleep(0.1)", "await loader.has_next()", "loader.has_next()", "loader"),
+        ("poll_eval_checkpoint", "asyncio.sleep(2.0)", "time.sleep(2.0)", "await evaluator.poll_best()", "evaluator.poll_best()", "evaluator"),
+        ("poll_stream_eos", "asyncio.sleep(0.02)", "time.sleep(0.02)", "await stream.is_eos()", "stream.is_eos()", "stream"),
+        ("poll_buffer_drain", "asyncio.sleep(0.05)", "time.sleep(0.05)", "await buf.is_empty()", "buf.is_empty()", "buf"),
+        ("wait_for_condition", "asyncio.sleep(period)", "time.sleep(period)", "await check_fn()", "check_fn()", "check_fn, period: float = 0.1"),
+        ("poll_replication_lag", "asyncio.sleep(0.5)", "time.sleep(0.5)", "await replica.lag_seconds()", "replica.lag_seconds()", "replica"),
+        ("poll_token_bucket", "asyncio.sleep(0.05)", "time.sleep(0.05)", "await bucket.consume(1)", "bucket.consume(1)", "bucket"),
+        ("poll_batch_assembly", "asyncio.sleep(0.01)", "time.sleep(0.01)", "await queue.size() >= batch_size", "queue.size() >= batch_size", "queue, batch_size: int"),
+        ("poll_pipeline_flush", "asyncio.sleep(0.1)", "time.sleep(0.1)", "await pipe.flush_done()", "pipe.flush_done()", "pipe"),
+    ]
+    for fn, a_sleep, s_sleep, a_step, s_step, extra_args in polling_specs:
+        target = f"""import asyncio
+
+async def {fn}({extra_args}):
+    for _ in range(10):
+        await {a_sleep}
+        status = {a_step}
+        if status:
+            return True
+    return False
+"""
+        control = f"""import time
+
+def {fn}({extra_args}):
+    for _ in range(10):
+        {s_sleep}
+        status = {s_step}
+        if status:
+            return True
+    return False
+"""
+        pairs.append({
+            "category": "async_await",
+            "target_construct": "AsyncFunctionDef",
+            "diff_summary": f"Async polling with asyncio.sleep vs time.sleep: {fn}",
+            "target_code": target,
+            "control_code": control,
+        })
+
+    # Family 3: Async Queue / Stream Producers & Consumers (15 pairs)
+    queue_specs = [
+        ("drain_queue_items", "q.get()", "q.get()", "q.task_done()", "q.task_done()"),
+        ("feed_queue_item", "q.put(item)", "q.put(item)", "pass", "pass"),
+        ("transfer_queue_batch", "in_q.get()", "in_q.get()", "out_q.put(val)", "out_q.put(val)"),
+        ("filter_queue_stream", "in_q.get()", "in_q.get()", "out_q.put(val)", "out_q.put(val)"),
+        ("consume_token_stream", "stream.next_token()", "stream.next_token()", "collector.append(t)", "collector.append(t)"),
+        ("read_packet_frame", "reader.read_frame()", "reader.read_frame()", "pass", "pass"),
+        ("yield_batch_sample", "sampler.sample()", "sampler.sample()", "pass", "pass"),
+        ("forward_event_bus", "bus.receive()", "bus.receive()", "bus.dispatch(evt)", "bus.dispatch(evt)"),
+        ("collect_stream_text", "stream.read_chunk()", "stream.read_chunk()", "chunks.append(c)", "chunks.append(c)"),
+        ("pipeline_enqueue", "pipe.push(elem)", "pipe.push(elem)", "pass", "pass"),
+        ("dequeue_inference_req", "queue.get_request()", "queue.get_request()", "pass", "pass"),
+        ("stream_token_chunk", "generator.next_chunk()", "generator.next_chunk()", "pass", "pass"),
+        ("flush_stream_buffer", "stream.flush()", "stream.flush()", "pass", "pass"),
+        ("receive_ws_message", "socket.recv()", "socket.recv()", "pass", "pass"),
+        ("send_ws_acknowledgement", "socket.send('ACK')", "socket.send('ACK')", "pass", "pass"),
+    ]
+    for idx, (fn, a_act, s_act, a_done, s_done) in enumerate(queue_specs, 1):
+        target = f"""async def {fn}_{idx:02d}(q, count: int = 5) -> list:
+    items = []
+    for _ in range(count):
+        val = await {a_act}
+        items.append(val)
+        {a_done}
+    return items
+"""
+        control = f"""def {fn}_{idx:02d}(q, count: int = 5) -> list:
+    items = []
+    for _ in range(count):
+        val = {s_act}
+        items.append(val)
+        {s_done}
+    return items
+"""
+        pairs.append({
+            "category": "async_await",
+            "target_construct": "AsyncFunctionDef",
+            "diff_summary": f"Async stream consumption vs synchronous loop: {fn}_{idx:02d}",
+            "target_code": target,
+            "control_code": control,
+        })
+
+    # Family 4: Async Concurrency & Batch Aggregation (15 pairs)
+    for idx in range(1, 16):
+        fn = f"async_batch_pipeline_{idx:02d}"
+        target = f"""import asyncio
+
+async def {fn}(workers: list, payload: dict) -> list:
+    tasks = [worker.process(payload) for worker in workers]
+    results = await asyncio.gather(*tasks)
+    return results
+"""
+        control = f"""def {fn}(workers: list, payload: dict) -> list:
+    results = [worker.process(payload) for worker in workers]
+    return results
+"""
+        pairs.append({
+            "category": "async_await",
+            "target_construct": "AsyncFunctionDef",
+            "diff_summary": f"Async asyncio.gather vs synchronous list comprehension: {fn}",
+            "target_code": target,
+            "control_code": control,
+        })
+
+    return pairs[:60]
 
 
+# ==============================================================================
+# CATEGORY 4: CLASS_DEF (60 Pairs)
+# ==============================================================================
 def create_class_def_pairs() -> List[Dict[str, Any]]:
-    """Build contrastive pairs for class_def (Target: ast.ClassDef vs Control: dict/closure/module)."""
-    templates = [
-        {
-            "desc": "Stateful counter object vs dictionary closure",
-            "target": """class Counter:
-    def __init__(self, initial: int = 0):
-        self.value = initial
-
-    def increment(self, step: int = 1) -> int:
-        self.value += step
-        return self.value
-""",
-            "control": """def make_counter(initial: int = 0):
-    state = {"value": initial}
-    def increment(step: int = 1) -> int:
-        state["value"] += step
-        return state["value"]
-    return increment
-""",
-        },
-        {
-            "desc": "Point2D geometry container vs tuple functions",
-            "target": """import math
-
-class Point2D:
-    def __init__(self, x: float, y: float):
-        self.x = x
-        self.y = y
-
-    def distance_to_origin(self) -> float:
-        return math.hypot(self.x, self.y)
-""",
-            "control": """import math
-
-def make_point(x: float, y: float) -> dict:
-    return {"x": x, "y": y}
-
-def point_distance_to_origin(point: dict) -> float:
-    return math.hypot(point["x"], point["y"])
-""",
-        },
-        {
-            "desc": "Stack data structure vs list wrapper functions",
-            "target": """class TokenStack:
-    def __init__(self):
-        self._items = []
-
-    def push(self, item: str) -> None:
-        self._items.append(item)
-
-    def pop(self) -> str:
-        return self._items.pop()
-""",
-            "control": """def create_token_stack() -> list:
-    return []
-
-def stack_push(stack: list, item: str) -> None:
-    stack.append(item)
-
-def stack_pop(stack: list) -> str:
-    return stack.pop()
-""",
-        },
-        {
-            "desc": "Hyperparameter configuration container vs dictionary",
-            "target": """class ModelConfig:
-    def __init__(self, d_model: int, n_layers: int, lr: float):
-        self.d_model = d_model
-        self.n_layers = n_layers
-        self.lr = lr
-
-    def total_parameters(self) -> int:
-        return self.d_model * self.n_layers * 12
-""",
-            "control": """def build_model_config(d_model: int, n_layers: int, lr: float) -> dict:
-    return {
-        "d_model": d_model,
-        "n_layers": n_layers,
-        "lr": lr,
-        "total_parameters": d_model * n_layers * 12,
-    }
-""",
-        },
-        {
-            "desc": "Moving average metric tracker vs state dict updater",
-            "target": """class RunningMean:
-    def __init__(self):
-        self.total = 0.0
-        self.count = 0
-
-    def update(self, val: float) -> float:
-        self.total += val
-        self.count += 1
-        return self.total / self.count
-""",
-            "control": """def create_running_mean() -> dict:
-    return {"total": 0.0, "count": 0}
-
-def update_running_mean(state: dict, val: float) -> float:
-    state["total"] += val
-    state["count"] += 1
-    return state["total"] / state["count"]
-""",
-        },
-        {
-            "desc": "Tokenizer vocabulary mapper vs lookup function",
-            "target": """class VocabMap:
-    def __init__(self, tokens: list):
-        self.w2i = {tok: i for i, tok in enumerate(tokens)}
-
-    def encode(self, token: str) -> int:
-        return self.w2i.get(token, -1)
-""",
-            "control": """def build_vocab_dict(tokens: list) -> dict:
-    return {tok: i for i, tok in enumerate(tokens)}
-
-def encode_token(vocab: dict, token: str) -> int:
-    return vocab.get(token, -1)
-""",
-        },
-        {
-            "desc": "Activation cache accumulator vs dictionary container",
-            "target": """class ActivationCache:
-    def __init__(self):
-        self.layers = {}
-
-    def store(self, layer_idx: int, act) -> None:
-        self.layers[layer_idx] = act
-""",
-            "control": """def make_activation_store() -> dict:
-    return {"layers": {}}
-
-def store_activation(store: dict, layer_idx: int, act) -> None:
-    store["layers"][layer_idx] = act
-""",
-        },
-        {
-            "desc": "Loss penalty evaluator vs scalar function",
-            "target": """class Regularizer:
-    def __init__(self, weight: float = 1e-4):
-        self.weight = weight
-
-    def penalty(self, norm_val: float) -> float:
-        return self.weight * (norm_val ** 2)
-""",
-            "control": """def compute_penalty(norm_val: float, weight: float = 1e-4) -> float:
-    return weight * (norm_val ** 2)
-""",
-        },
-        {
-            "desc": "Rate limiter window vs tuple timestamp check",
-            "target": """import time
-
-class RateLimiter:
-    def __init__(self, interval: float = 1.0):
-        self.interval = interval
-        self.last_call = 0.0
-
-    def allow(self) -> bool:
-        now = time.time()
-        if now - self.last_call >= self.interval:
-            self.last_call = now
-            return True
-        return False
-""",
-            "control": """import time
-
-def allow_call(last_call: float, interval: float = 1.0) -> tuple:
-    now = time.time()
-    if now - last_call >= interval:
-        return True, now
-    return False, last_call
-""",
-        },
-        {
-            "desc": "Gradient accumulator container vs list reduce",
-            "target": """class GradBuffer:
-    def __init__(self, steps: int = 4):
-        self.steps = steps
-        self.grads = []
-
-    def push_grad(self, g: float) -> bool:
-        self.grads.append(g)
-        return len(self.grads) >= self.steps
-""",
-            "control": """def push_grad_sync(grads: list, g: float, max_steps: int = 4) -> bool:
-    grads.append(g)
-    return len(grads) >= max_steps
-""",
-        },
-    ]
-
     pairs = []
-    for i, t in enumerate(templates, 1):
-        pairs.append(
-            {
-                "pair_id": f"class_def_{i:03d}",
-                "category": "class_def",
-                "target_construct": "ClassDef",
-                "diff_summary": t["desc"],
-                "target_code": t["target"],
-                "control_code": t["control"],
-            }
-        )
-    return pairs
+    
+    # Family 1: Numerical Accumulators & Metric Trackers (15 pairs)
+    acc_specs = [
+        ("RunningAverage", "total", "float", "count", "int", "def update(self, val: float): self.total += val; self.count += 1; return self.total / self.count", "make_running_average"),
+        ("MovingVariance", "sum_x", "float", "sum_x2", "float", "def add(self, x: float): self.sum_x += x; self.sum_x2 += (x * x); return self.sum_x2", "make_moving_variance"),
+        ("MinMaxTracker", "min_v", "float", "max_v", "float", "def observe(self, v: float): self.min_v = min(self.min_v, v); self.max_v = max(self.max_v, v); return (self.min_v, self.max_v)", "make_min_max_tracker"),
+        ("LossAccumulator", "loss_sum", "float", "steps", "int", "def log_loss(self, l: float): self.loss_sum += l; self.steps += 1; return self.loss_sum / self.steps", "make_loss_accumulator"),
+        ("GradientNormTracker", "norm_sum", "float", "n_batches", "int", "def step(self, gn: float): self.norm_sum += gn; self.n_batches += 1; return self.norm_sum / self.n_batches", "make_grad_norm_tracker"),
+        ("AccuracyMeter", "correct", "int", "total", "int", "def record(self, is_corr: bool): self.correct += int(is_corr); self.total += 1; return self.correct / self.total", "make_accuracy_meter"),
+        ("TokenCounter", "prompt_toks", "int", "gen_toks", "int", "def add_tokens(self, p: int, g: int): self.prompt_toks += p; self.gen_toks += g; return self.prompt_toks + self.gen_toks", "make_token_counter"),
+        ("ThroughputMeter", "items", "int", "elapsed", "float", "def add_batch(self, n: int, s: float): self.items += n; self.elapsed += s; return self.items / self.elapsed", "make_throughput_meter"),
+        ("PerplexityTracker", "cross_entropy_sum", "float", "tokens", "int", "def record(self, loss: float, count: int): self.cross_entropy_sum += loss; self.tokens += count; return self.cross_entropy_sum / self.tokens", "make_perplexity_tracker"),
+        ("LearningRateSchedule", "initial_lr", "float", "step_num", "int", "def get_lr(self, decay: float): self.step_num += 1; return self.initial_lr * (decay ** self.step_num)", "make_lr_schedule"),
+        ("EmaEstimator", "shadow", "float", "decay", "float", "def update(self, val: float): self.shadow = self.decay * self.shadow + (1 - self.decay) * val; return self.shadow", "make_ema_estimator"),
+        ("TopKAccuracy", "top1", "int", "top5", "int", "def update(self, h1: bool, h5: bool): self.top1 += int(h1); self.top5 += int(h5); return (self.top1, self.top5)", "make_topk_accuracy"),
+        ("KLDivAccumulator", "kl_total", "float", "eval_steps", "int", "def record(self, kl: float): self.kl_total += kl; self.eval_steps += 1; return self.kl_total / self.eval_steps", "make_kl_accumulator"),
+        ("RewardTracker", "discounted_r", "float", "gamma", "float", "def step_reward(self, r: float): self.discounted_r = r + self.gamma * self.discounted_r; return self.discounted_r", "make_reward_tracker"),
+        ("EntropyMeter", "entropy_sum", "float", "n_samples", "int", "def log_entropy(self, e: float): self.entropy_sum += e; self.n_samples += 1; return self.entropy_sum / self.n_samples", "make_entropy_meter"),
+    ]
+    for c_name, f1, t1, f2, t2, m_code, f_name in acc_specs:
+        target = f"""class {c_name}:
+    def __init__(self, {f1}: {t1} = 0, {f2}: {t2} = 0):
+        self.{f1} = {f1}
+        self.{f2} = {f2}
+
+    {m_code}
+"""
+        control = f"""def {f_name}({f1}: {t1} = 0, {f2}: {t2} = 0) -> dict:
+    state = {{'{f1}': {f1}, '{f2}': {f2}}}
+    return state
+
+def update_{f_name}(state: dict, val: float) -> float:
+    state['{f1}'] += val
+    state['{f2}'] += 1
+    return state['{f1}'] / state['{f2}'] if state['{f2}'] != 0 else 0.0
+"""
+        pairs.append({
+            "category": "class_def",
+            "target_construct": "ClassDef",
+            "diff_summary": f"Stateful class definition vs closure/dictionary state: {c_name}",
+            "target_code": target,
+            "control_code": control,
+        })
+
+    # Family 2: Data Structure Containers & Buffers (15 pairs)
+    ds_specs = [
+        ("RingBuffer", "capacity: int = 16", "self.buffer = []", "def push(self, item): self.buffer.append(item); return len(self.buffer)", "make_ring_buffer"),
+        ("TokenStack", "max_depth: int = 100", "self.stack = []", "def push(self, tok: int): self.stack.append(tok); return len(self.stack)", "make_token_stack"),
+        ("KeyValStore", "namespace: str = 'default'", "self.store = {}", "def set_key(self, k: str, v: str): self.store[k] = v; return v", "make_kv_store"),
+        ("VectorList", "dim: int = 128", "self.vectors = []", "def add_vec(self, v: list): self.vectors.append(v); return len(self.vectors)", "make_vector_list"),
+        ("AttentionCache", "n_layers: int = 32", "self.k_cache = {}", "def store_k(self, layer: int, k): self.k_cache[layer] = k; return layer", "make_attention_cache"),
+        ("ActivationTape", "record_grads: bool = False", "self.tape = []", "def record_act(self, act): self.tape.append(act); return len(self.tape)", "make_activation_tape"),
+        ("PriorityIndex", "size_limit: int = 50", "self.elements = []", "def insert_item(self, item, score: float): self.elements.append((score, item)); return len(self.elements)", "make_priority_index"),
+        ("SymbolTable", "scope: str = 'global'", "self.symbols = {}", "def define(self, sym: str, val): self.symbols[sym] = val; return val", "make_symbol_table"),
+        ("SlidingWindow", "window_size: int = 10", "self.window = []", "def append_val(self, v: float): self.window.append(v); return sum(self.window)", "make_sliding_window"),
+        ("CheckpointRegistry", "base_path: str = './ckpts'", "self.entries = []", "def register(self, step: int): self.entries.append(step); return len(self.entries)", "make_checkpoint_registry"),
+        ("BatchBuffer", "target_batch: int = 64", "self.samples = []", "def add_sample(self, s: dict): self.samples.append(s); return len(self.samples)", "make_batch_buffer"),
+        ("PrefixTrie", "root_char: str = '^'", "self.nodes = {}", "def insert_prefix(self, p: str): self.nodes[p] = True; return len(self.nodes)", "make_prefix_trie"),
+        ("NeuronMask", "n_neurons: int = 4096", "self.active = set()", "def activate(self, idx: int): self.active.add(idx); return len(self.active)", "make_neuron_mask"),
+        ("LayerNormParams", "dim: int = 768", "self.gamma = [1.0] * dim", "def get_gamma(self): return len(self.gamma)", "make_layernorm_params"),
+        ("GrammarRuleSet", "name: str = 'python'", "self.rules = []", "def add_rule(self, rule: str): self.rules.append(rule); return len(self.rules)", "make_grammar_rules"),
+    ]
+    for c_name, init_args, init_body, method_code, f_name in ds_specs:
+        target = f"""class {c_name}:
+    def __init__(self, {init_args}):
+        {init_body}
+
+    {method_code}
+"""
+        control = f"""def {f_name}({init_args}) -> dict:
+    return {{'state': []}}
+
+def {f_name}_push(store: dict, item) -> int:
+    store['state'].append(item)
+    return len(store['state'])
+"""
+        pairs.append({
+            "category": "class_def",
+            "target_construct": "ClassDef",
+            "diff_summary": f"Data container class vs dictionary buffer: {c_name}",
+            "target_code": target,
+            "control_code": control,
+        })
+
+    # Family 3: Model Configuration & Hyperparameters (15 pairs)
+    cfg_specs = [
+        ("TransformerConfig", "d_model: int = 768, n_layers: int = 12, n_heads: int = 12"),
+        ("GemmaMLPConfig", "hidden_dim: int = 3072, intermediate_dim: int = 8192, act_fn: str = 'gelu'"),
+        ("AttentionConfig", "num_heads: int = 16, num_kv_heads: int = 4, head_dim: int = 64"),
+        ("RoPEConfig", "base: float = 10000.0, scaling_factor: float = 1.0, max_seq_len: int = 8192"),
+        ("OptimizerConfig", "learning_rate: float = 1e-4, weight_decay: float = 0.01, beta1: float = 0.9"),
+        ("TrainingArguments", "batch_size: int = 32, max_steps: int = 10000, eval_interval: int = 500"),
+        ("TokenizerConfig", "vocab_size: int = 32000, bos_id: int = 2, eos_id: int = 1"),
+        ("LoraConfig", "r: int = 8, lora_alpha: int = 16, lora_dropout: float = 0.05"),
+        ("QuantizationConfig", "bits: int = 4, quant_type: str = 'nf4', use_double_quant: bool = True"),
+        ("ProbeConfig", "probe_layer: int = 16, target_ast: str = 'Try', probe_type: str = 'linear'"),
+        ("InterventionConfig", "ablate_heads: list = None, clamp_value: float = 0.0, layer_idx: int = 12"),
+        ("DatasetConfig", "corpus_file: str = 'corpus.jsonl', max_tokens: int = 512, seed: int = 42"),
+        ("GenerationConfig", "temperature: float = 0.7, top_p: float = 0.95, max_new_tokens: int = 128"),
+        ("WandbLoggerConfig", "project: str = 'gemma_clean_code', entity: str = 'baddest-cmd', log_freq: int = 10"),
+        ("EvaluatorConfig", "metric: str = 'monosemanticity_score', threshold: float = 0.85, n_runs: int = 5"),
+    ]
+    for idx, (c_name, params) in enumerate(cfg_specs, 1):
+        target = f"""class {c_name}:
+    def __init__(self, {params}):
+        self.params = {{{params.split(',')[0].split(':')[0]}: 1}}
+
+    def get_summary(self) -> dict:
+        return self.params
+"""
+        control = f"""def build_{c_name.lower()}({params}) -> dict:
+    return {{{params.split(',')[0].split(':')[0]}: 1}}
+
+def get_{c_name.lower()}_summary(cfg: dict) -> dict:
+    return cfg
+"""
+        pairs.append({
+            "category": "class_def",
+            "target_construct": "ClassDef",
+            "diff_summary": f"Configuration class vs factory dictionary: {c_name}",
+            "target_code": target,
+            "control_code": control,
+        })
+
+    # Family 4: Algorithmic Operators & Pipeline Stages (15 pairs)
+    for idx in range(1, 16):
+        c_name = f"ASTPipelineProcessor_{idx:02d}"
+        f_name = f"process_ast_pipeline_{idx:02d}"
+        target = f"""class {c_name}:
+    def __init__(self, stage_id: int = {idx}):
+        self.stage_id = stage_id
+
+    def forward(self, input_tensor: list) -> list:
+        return [x * self.stage_id for x in input_tensor]
+"""
+        control = f"""def {f_name}(input_tensor: list, stage_id: int = {idx}) -> list:
+    return [x * stage_id for x in input_tensor]
+"""
+        pairs.append({
+            "category": "class_def",
+            "target_construct": "ClassDef",
+            "diff_summary": f"Pipeline processor class vs standalone pure function: {c_name}",
+            "target_code": target,
+            "control_code": control,
+        })
+
+    return pairs[:60]
 
 
+# ==============================================================================
+# CATEGORY 5: NESTED_LOOP (60 Pairs)
+# ==============================================================================
 def create_nested_loop_pairs() -> List[Dict[str, Any]]:
-    """Build contrastive pairs for nested_loop (Target: 2D nested loops vs Control: flat 1D loop)."""
-    templates = [
-        {
-            "desc": "Matrix coordinate grid sum",
-            "target": """def sum_matrix_grid(rows: int, cols: int) -> int:
-    total = 0
-    for r in range(rows):
-        for c in range(cols):
-            total += (r * cols + c)
+    pairs = []
+    
+    # Family 1: 2D Matrix & Tensor Grid Traversals (15 pairs)
+    matrix_specs = [
+        ("sum_matrix_2d", "rows: int, cols: int", "total += (r * cols + c)", "rows * cols", "total += idx"),
+        ("fill_zero_grid", "height: int, width: int", "grid[h][w] = 0.0", "height * width", "grid[idx // width][idx % width] = 0.0"),
+        ("count_matches_2d", "n: int, m: int", "if r == c: hits += 1", "n * m", "if (idx // m) == (idx % m): hits += 1"),
+        ("multiply_elements", "dim_x: int, dim_y: int", "prod *= (1.0 + x * y)", "dim_x * dim_y", "prod *= (1.0 + (idx // dim_y) * (idx % dim_y))"),
+        ("find_max_coordinate", "r_len: int, c_len: int", "if r + c > best: best = r + c", "r_len * c_len", "if (idx // c_len) + (idx % c_len) > best: best = (idx // c_len) + (idx % c_len)"),
+        ("scale_submatrix", "rows: int, cols: int", "grid[i][j] *= factor", "rows * cols", "grid[idx // cols][idx % cols] *= factor"),
+        ("zero_upper_triangle", "size: int, dummy: int = 0", "if j > i: grid[i][j] = 0.0", "size * size", "if (idx % size) > (idx // size): grid[idx // size][idx % size] = 0.0"),
+        ("accumulate_outer_product", "n: int, m: int", "acc += vec_a[i] * vec_b[j]", "n * m", "acc += vec_a[idx // m] * vec_b[idx % m]"),
+        ("euclidean_distance_matrix", "n_pts: int, dummy: int = 0", "dist[i][j] = abs(pts[i] - pts[j])", "n_pts * n_pts", "dist[idx // n_pts][idx % n_pts] = abs(pts[idx // n_pts] - pts[idx % n_pts])"),
+        ("mask_diagonal_entries", "dim: int, dummy: int = 0", "if r == c: mask[r][c] = 1", "dim * dim", "if (idx // dim) == (idx % dim): mask[idx // dim][idx % dim] = 1"),
+        ("sliding_kernel_dot", "h_len: int, w_len: int", "s += feat[r][c] * kernel[r][c]", "h_len * w_len", "s += feat[idx // w_len][idx % w_len] * kernel[idx // w_len][idx % w_len]"),
+        ("threshold_matrix_values", "n_r: int, n_c: int", "if val > cutoff: count += 1", "n_r * n_c", "if val > cutoff: count += 1"),
+        ("accumulate_patch_stats", "p_h: int, p_w: int", "total += patch[i][j]", "p_h * p_w", "total += patch[idx // p_w][idx % p_w]"),
+        ("transpose_copy_buffer", "n: int, m: int", "out_buf[c][r] = in_buf[r][c]", "n * m", "out_buf[idx % m][idx // m] = in_buf[idx // m][idx % m]"),
+        ("clamp_grid_bounds", "n: int, m: int", "grid[r][c] = max(0.0, grid[r][c])", "n * m", "grid[idx // m][idx % m] = max(0.0, grid[idx // m][idx % m])"),
+    ]
+    for fn, sig, nested_action, total_expr, flat_action in matrix_specs:
+        target = f"""def {fn}({sig}) -> float:
+    total = 0.0
+    for r in range({sig.split(',')[0].split(':')[0]}):
+        for c in range({sig.split(',')[1].split(':')[0]}):
+            {nested_action}
     return total
-""",
-            "control": """def sum_matrix_grid(rows: int, cols: int) -> int:
-    total = 0
-    for idx in range(rows * cols):
-        total += idx
+"""
+        control = f"""def {fn}({sig}) -> float:
+    total = 0.0
+    total_elements = {total_expr}
+    for idx in range(total_elements):
+        {flat_action}
     return total
-""",
-        },
-        {
-            "desc": "Pairwise token interaction cross product",
-            "target": """def compute_pairwise_matches(tokens_a: list, tokens_b: list) -> int:
-    matches = 0
-    for a in tokens_a:
-        for b in tokens_b:
-            if a == b:
-                matches += 1
-    return matches
-""",
-            "control": """def compute_pairwise_matches(tokens_a: list, tokens_b: list) -> int:
-    set_b = set(tokens_b)
-    matches = 0
-    for a in tokens_a:
-        if a in set_b:
-            matches += 1
-    return matches
-""",
-        },
-        {
-            "desc": "Nested list flattening",
-            "target": """def flatten_nested_lists(matrix: list) -> list:
-    flat = []
-    for row in matrix:
-        for val in row:
-            flat.append(val)
-    return flat
-""",
-            "control": """def flatten_nested_lists(matrix: list) -> list:
-    flat = []
-    for row in matrix:
-        flat.extend(row)
-    return flat
-""",
-        },
-        {
-            "desc": "Attention weight matrix mask zeroing",
-            "target": """def zero_lower_triangle(n: int) -> list:
-    grid = [[0.0] * n for _ in range(n)]
-    for i in range(n):
-        for j in range(i):
-            grid[i][j] = -1e9
-    return grid
-""",
-            "control": """def zero_lower_triangle(n: int) -> list:
-    grid = [[0.0] * n for _ in range(n)]
-    for idx in range(n * n):
-        i = idx // n
-        j = idx % n
-        if j < i:
-            grid[i][j] = -1e9
-    return grid
-""",
-        },
-        {
-            "desc": "2D convolution sliding window dot product",
-            "target": """def convolve_2d_window(image: list, kernel: list) -> float:
-    acc = 0.0
-    for i in range(3):
-        for j in range(3):
-            acc += image[i][j] * kernel[i][j]
-    return acc
-""",
-            "control": """def convolve_2d_window(image: list, kernel: list) -> float:
-    acc = 0.0
-    for idx in range(9):
-        i = idx // 3
-        j = idx % 3
-        acc += image[i][j] * kernel[i][j]
-    return acc
-""",
-        },
-        {
-            "desc": "Find coordinate of target element in 2D grid",
-            "target": """def find_cell(grid: list, target_val: int) -> tuple:
-    for r in range(len(grid)):
-        for c in range(len(grid[r])):
-            if grid[r][c] == target_val:
-                return (r, c)
-    return (-1, -1)
-""",
-            "control": """def find_cell(grid: list, target_val: int) -> tuple:
-    rows = len(grid)
-    cols = len(grid[0]) if rows > 0 else 0
-    for idx in range(rows * cols):
-        r, c = idx // cols, idx % cols
-        if grid[r][c] == target_val:
-            return (r, c)
-    return (-1, -1)
-""",
-        },
-        {
-            "desc": "Nested while loop counter",
-            "target": """def nested_while_steps(limit_i: int, limit_j: int) -> int:
-    steps = 0
-    i = 0
-    while i < limit_i:
-        j = 0
-        while j < limit_j:
-            steps += 1
-            j += 1
-        i += 1
-    return steps
-""",
-            "control": """def nested_while_steps(limit_i: int, limit_j: int) -> int:
-    steps = 0
-    idx = 0
-    total = limit_i * limit_j
-    while idx < total:
-        steps += 1
-        idx += 1
-    return steps
-""",
-        },
-        {
-            "desc": "Multi-head attention projection indexing",
-            "target": """def project_heads(n_heads: int, head_dim: int) -> list:
-    indices = []
+"""
+        pairs.append({
+            "category": "nested_loop",
+            "target_construct": "NestedLoop",
+            "diff_summary": f"2D grid nested loops vs 1D flat index loop: {fn}",
+            "target_code": target,
+            "control_code": control,
+        })
+
+    # Family 2: Pairwise List & Token Comparisons (15 pairs)
+    pair_specs = [
+        ("pairwise_token_overlap", "tokens_a", "tokens_b", "if a == b: overlap += 1", "set_b = set(tokens_b)\n    for a in tokens_a:\n        if a in set_b: overlap += 1"),
+        ("cartesian_string_concat", "words_a", "words_b", "pairs.append(a + '_' + b)", "pairs = [f'{a}_{b}' for a, b in zip(words_a, words_b)]"),
+        ("cross_entropy_pair_sum", "dist_p", "dist_q", "acc += p_val * q_val", "acc = sum(p * q for p, q in zip(dist_p, dist_q))"),
+        ("find_duplicate_pairs", "items_a", "items_b", "if x == y: dups.append(x)", "dups = list(set(items_a).intersection(items_b))"),
+        ("all_pairs_cosine_score", "embeds_u", "embeds_v", "scores.append(u * v)", "scores = [u * v for u, v in zip(embeds_u, embeds_v)]"),
+        ("ngram_cooccurrence", "context_window", "target_window", "if w1 == w2: cooc += 1", "set_w2 = set(target_window)\n    for w1 in context_window:\n        if w1 in set_w2: cooc += 1"),
+        ("match_vocab_subsets", "src_vocab", "tgt_vocab", "if s_word == t_word: common.append(s_word)", "common = [w for w in src_vocab if w in tgt_vocab]"),
+        ("bipartite_edge_weight", "nodes_u", "nodes_v", "total_w += edge_matrix.get((u, v), 0)", "total_w = sum(edge_matrix.get((u, v), 0) for u in nodes_u for v in [nodes_v[0]])"),
+        ("attention_mask_alignment", "query_toks", "key_toks", "if q_pos >= k_pos: mask_count += 1", "mask_count = sum(1 for idx in range(len(query_toks)) if query_toks[idx] >= key_toks[idx])"),
+        ("find_longest_common_token", "seq_1", "seq_2", "if t1 == t2: matched.append(t1)", "matched = [t for t in seq_1 if t in seq_2]"),
+        ("edit_distance_char_scan", "chars_a", "chars_b", "if c1 != c2: diffs += 1", "diffs = sum(1 for c1, c2 in zip(chars_a, chars_b) if c1 != c2)"),
+        ("compute_jaccard_pairs", "sample_a", "sample_b", "if a in b: inter += 1", "inter = len(set(sample_a) & set(sample_b))"),
+        ("count_inversions", "arr_a", "arr_b", "if val_a > val_b: inv += 1", "inv = sum(1 for a, b in zip(arr_a, arr_b) if a > b)"),
+        ("pair_wise_diff_norm", "vec_1", "vec_2", "total_diff += abs(v1 - v2)", "total_diff = sum(abs(v1 - v2) for v1, v2 in zip(vec_1, vec_2))"),
+        ("compare_predictions", "preds", "targets", "if p == t: corr += 1", "corr = sum(1 for p, t in zip(preds, targets) if p == t)"),
+    ]
+    for fn, l1, l2, nested_stmt, flat_body in pair_specs:
+        target = f"""def {fn}({l1}: list, {l2}: list) -> int:
+    result = 0
+    for a in {l1}:
+        for b in {l2}:
+            {nested_stmt}
+    return result
+"""
+        control = f"""def {fn}({l1}: list, {l2}: list) -> int:
+    result = 0
+    {flat_body}
+    return result
+"""
+        pairs.append({
+            "category": "nested_loop",
+            "target_construct": "NestedLoop",
+            "diff_summary": f"Nested pairwise loops vs single loop or set intersection: {fn}",
+            "target_code": target,
+            "control_code": control,
+        })
+
+    # Family 3: Multi-layer Network & Attention Indexing (15 pairs)
+    for idx in range(1, 16):
+        fn = f"head_dimension_projection_{idx:02d}"
+        target = f"""def {fn}(n_heads: int, head_dim: int) -> list:
+    projections = []
     for h in range(n_heads):
         for d in range(head_dim):
-            indices.append(h * head_dim + d)
-    return indices
-""",
-            "control": """def project_heads(n_heads: int, head_dim: int) -> list:
+            projections.append((h, d, h * head_dim + d))
+    return projections
+"""
+        control = f"""def {fn}(n_heads: int, head_dim: int) -> list:
     total_dim = n_heads * head_dim
-    indices = [i for i in range(total_dim)]
-    return indices
-""",
-        },
-        {
-            "desc": "Nested for-loop Cartesian product tuple generation",
-            "target": """def cartesian_coords(xs: list, ys: list) -> list:
-    points = []
-    for x in xs:
-        for y in ys:
-            points.append((x, y))
-    return points
-""",
-            "control": """import itertools
+    projections = [(idx // head_dim, idx % head_dim, idx) for idx in range(total_dim)]
+    return projections
+"""
+        pairs.append({
+            "category": "nested_loop",
+            "target_construct": "NestedLoop",
+            "diff_summary": f"Nested head and dimension loop vs 1D product iteration: {fn}",
+            "target_code": target,
+            "control_code": control,
+        })
 
-def cartesian_coords(xs: list, ys: list) -> list:
-    points = list(itertools.product(xs, ys))
-    return points
-""",
-        },
-        {
-            "desc": "Matrix diagonal boundary iteration",
-            "target": """def count_off_diagonals(size: int) -> int:
+    # Family 4: Nested While Loops & Multi-Level Counters (15 pairs)
+    for idx in range(1, 16):
+        fn = f"nested_while_stepper_{idx:02d}"
+        target = f"""def {fn}(max_i: int, max_j: int) -> int:
     count = 0
-    for r in range(size):
-        for c in range(size):
-            if r != c:
-                count += 1
+    i = 0
+    while i < max_i:
+        j = 0
+        while j < max_j:
+            count += (i + j)
+            j += 1
+        i += 1
     return count
-""",
-            "control": """def count_off_diagonals(size: int) -> int:
+"""
+        control = f"""def {fn}(max_i: int, max_j: int) -> int:
     count = 0
-    for idx in range(size * size):
-        r, c = divmod(idx, size)
-        if r != c:
-            count += 1
+    idx = 0
+    total = max_i * max_j
+    while idx < total:
+        i = idx // max_j
+        j = idx % max_j
+        count += (i + j)
+        idx += 1
     return count
-""",
-        },
-    ]
+"""
+        pairs.append({
+            "category": "nested_loop",
+            "target_construct": "NestedLoop",
+            "diff_summary": f"Nested while loops vs single flat while loop: {fn}",
+            "target_code": target,
+            "control_code": control,
+        })
 
-    pairs = []
-    for i, t in enumerate(templates, 1):
-        pairs.append(
-            {
-                "pair_id": f"nested_loop_{i:03d}",
-                "category": "nested_loop",
-                "target_construct": "NestedLoop",
-                "diff_summary": t["desc"],
-                "target_code": t["target"],
-                "control_code": t["control"],
-            }
-        )
-    return pairs
+    return pairs[:60]
 
 
+# ==============================================================================
+# MAIN CORPUS BUILDER & VALIDATOR
+# ==============================================================================
 def build_and_validate_corpus(output_path: Path) -> List[Dict[str, Any]]:
     """Assemble all 5 categories, validate AST parsing, and write JSONL."""
+    category_generators = [
+        ("try_except", create_try_except_pairs),
+        ("with_statement", create_with_statement_pairs),
+        ("async_await", create_async_await_pairs),
+        ("class_def", create_class_def_pairs),
+        ("nested_loop", create_nested_loop_pairs),
+    ]
+
     all_pairs: List[Dict[str, Any]] = []
-    all_pairs.extend(create_try_except_pairs())
-    all_pairs.extend(create_with_statement_pairs())
-    all_pairs.extend(create_async_await_pairs())
-    all_pairs.extend(create_class_def_pairs())
-    all_pairs.extend(create_nested_loop_pairs())
+
+    for cat_name, gen_fn in category_generators:
+        cat_pairs = gen_fn()
+        if len(cat_pairs) != 60:
+            raise ValueError(f"Category {cat_name} produced {len(cat_pairs)} pairs, expected exactly 60.")
+        
+        for idx, item in enumerate(cat_pairs, 1):
+            pair_id = f"{cat_name}_{idx:03d}"
+            item["pair_id"] = pair_id
+            all_pairs.append(item)
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     verified_records = []
-    for item in all_pairs:
-        # 1. Native AST validation
-        validate_python_code(item["target_code"], f"{item['pair_id']} (target)")
-        validate_python_code(item["control_code"], f"{item['pair_id']} (control)")
+    syntax_error_count = 0
 
-        # 2. Extract AST Node class names
+    for item in all_pairs:
+        # Validate target snippet with ast.parse()
+        try:
+            validate_python_code(item["target_code"], f"{item['pair_id']} (target)")
+            target_valid = True
+        except ValueError as err:
+            print(err)
+            syntax_error_count += 1
+            target_valid = False
+
+        # Validate control snippet with ast.parse()
+        try:
+            validate_python_code(item["control_code"], f"{item['pair_id']} (control)")
+            control_valid = True
+        except ValueError as err:
+            print(err)
+            syntax_error_count += 1
+            control_valid = False
+
         target_nodes = extract_ast_nodes(item["target_code"])
         control_nodes = extract_ast_nodes(item["control_code"])
 
@@ -1075,12 +922,15 @@ def build_and_validate_corpus(output_path: Path) -> List[Dict[str, Any]]:
             "control_ast_nodes": control_nodes,
             "target_char_len": len(item["target_code"]),
             "control_char_len": len(item["control_code"]),
-            "target_valid": True,
-            "control_valid": True,
+            "target_valid": target_valid,
+            "control_valid": control_valid,
         }
         verified_records.append(record)
 
-    # Write JSONL file
+    if syntax_error_count > 0:
+        raise RuntimeError(f"Encountered {syntax_error_count} syntax errors during AST parsing.")
+
+    # Write formatted JSONL
     with open(output_path, "w", encoding="utf-8") as f:
         for rec in verified_records:
             f.write(json.dumps(rec, ensure_ascii=False) + "\n")
@@ -1092,14 +942,17 @@ def main():
     root_dir = Path(__file__).resolve().parent.parent
     corpus_file = root_dir / "corpus" / "gemma_ast_corpus.jsonl"
 
-    print(f"Generating synthetic AST corpus at: {corpus_file}")
+    print(f"Generating 60 contrastive snippet pairs per category at: {corpus_file}")
     records = build_and_validate_corpus(corpus_file)
 
     categories = set(r["category"] for r in records)
-    print(f"\nSuccessfully generated & validated {len(records)} contrastive snippet pairs:")
+    total_pairs = len(records)
+    total_snippets = total_pairs * 2
+
+    print(f"\n✅ All {total_snippets} snippets ({total_pairs} pairs) successfully verified with ast.parse():")
     for cat in sorted(categories):
         count = sum(1 for r in records if r["category"] == cat)
-        print(f"  - {cat:16s}: {count} pairs")
+        print(f"  - {cat:16s}: {count} pairs ({count * 2} snippets)")
 
     print(f"\nCorpus saved to: {corpus_file}")
 
