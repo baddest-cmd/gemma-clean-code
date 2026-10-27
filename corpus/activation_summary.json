@@ -1,0 +1,727 @@
+{
+  "model_name": "google/gemma-4-12B-it",
+  "device": "synthetic_simulator",
+  "sampled_layers": [
+    16,
+    24,
+    32
+  ],
+  "total_pairs_evaluated": 300,
+  "total_snippets_evaluated": 600,
+  "layers": {
+    "layer_16": {
+      "layer_index": 16,
+      "hook_path": "blocks.16.mlp.hook_post",
+      "monitored_dim": 1024,
+      "peak_variance": 0.3919,
+      "categories": {
+        "async_await": {
+          "sample_pairs": 60,
+          "target_keyword": "async",
+          "mean_overall_delta": 0.1949,
+          "delta_variance": 0.238,
+          "quantiles": {
+            "q00_min": 0.0502,
+            "q25": 0.0737,
+            "q50_median": 0.0971,
+            "q75": 0.1214,
+            "q95": 0.1395,
+            "q100_max": 2.6198
+          },
+          "top_candidate_neurons": [
+            {
+              "neuron_idx": 88,
+              "delta": 2.6198,
+              "mean_target_act": 2.7613,
+              "mean_control_act": 0.1415
+            },
+            {
+              "neuron_idx": 113,
+              "delta": 2.6174,
+              "mean_target_act": 3.0613,
+              "mean_control_act": 0.4439
+            },
+            {
+              "neuron_idx": 288,
+              "delta": 2.6165,
+              "mean_target_act": 2.8279,
+              "mean_control_act": 0.2115
+            },
+            {
+              "neuron_idx": 188,
+              "delta": 2.6159,
+              "mean_target_act": 2.868,
+              "mean_control_act": 0.2521
+            },
+            {
+              "neuron_idx": 688,
+              "delta": 2.6118,
+              "mean_target_act": 2.7988,
+              "mean_control_act": 0.1869
+            }
+          ]
+        },
+        "class_def": {
+          "sample_pairs": 60,
+          "target_keyword": "class",
+          "mean_overall_delta": 0.2216,
+          "delta_variance": 0.3919,
+          "quantiles": {
+            "q00_min": 0.05,
+            "q25": 0.0711,
+            "q50_median": 0.0957,
+            "q75": 0.1194,
+            "q95": 0.139,
+            "q100_max": 3.3287
+          },
+          "top_candidate_neurons": [
+            {
+              "neuron_idx": 459,
+              "delta": 3.3287,
+              "mean_target_act": 3.599,
+              "mean_control_act": 0.2703
+            },
+            {
+              "neuron_idx": 884,
+              "delta": 3.3271,
+              "mean_target_act": 3.7831,
+              "mean_control_act": 0.456
+            },
+            {
+              "neuron_idx": 409,
+              "delta": 3.3234,
+              "mean_target_act": 3.5688,
+              "mean_control_act": 0.2455
+            },
+            {
+              "neuron_idx": 109,
+              "delta": 3.3233,
+              "mean_target_act": 3.4101,
+              "mean_control_act": 0.0868
+            },
+            {
+              "neuron_idx": 59,
+              "delta": 3.3211,
+              "mean_target_act": 3.7645,
+              "mean_control_act": 0.4434
+            }
+          ]
+        },
+        "nested_loop": {
+          "sample_pairs": 60,
+          "target_keyword": "for",
+          "mean_overall_delta": 0.2074,
+          "delta_variance": 0.3104,
+          "quantiles": {
+            "q00_min": 0.05,
+            "q25": 0.0717,
+            "q50_median": 0.0951,
+            "q75": 0.1191,
+            "q95": 0.1389,
+            "q100_max": 2.9686
+          },
+          "top_candidate_neurons": [
+            {
+              "neuron_idx": 398,
+              "delta": 2.9686,
+              "mean_target_act": 3.1529,
+              "mean_control_act": 0.1842
+            },
+            {
+              "neuron_idx": 198,
+              "delta": 2.9678,
+              "mean_target_act": 3.2434,
+              "mean_control_act": 0.2757
+            },
+            {
+              "neuron_idx": 548,
+              "delta": 2.9666,
+              "mean_target_act": 3.4007,
+              "mean_control_act": 0.4341
+            },
+            {
+              "neuron_idx": 598,
+              "delta": 2.9656,
+              "mean_target_act": 3.3393,
+              "mean_control_act": 0.3737
+            },
+            {
+              "neuron_idx": 673,
+              "delta": 2.9639,
+              "mean_target_act": 3.0751,
+              "mean_control_act": 0.1112
+            }
+          ]
+        },
+        "try_except": {
+          "sample_pairs": 60,
+          "target_keyword": "try",
+          "mean_overall_delta": 0.215,
+          "delta_variance": 0.3503,
+          "quantiles": {
+            "q00_min": 0.0501,
+            "q25": 0.0723,
+            "q50_median": 0.096,
+            "q75": 0.1195,
+            "q95": 0.1395,
+            "q100_max": 3.1479
+          },
+          "top_candidate_neurons": [
+            {
+              "neuron_idx": 191,
+              "delta": 3.1479,
+              "mean_target_act": 3.381,
+              "mean_control_act": 0.233
+            },
+            {
+              "neuron_idx": 216,
+              "delta": 3.1443,
+              "mean_target_act": 3.3512,
+              "mean_control_act": 0.2069
+            },
+            {
+              "neuron_idx": 841,
+              "delta": 3.1419,
+              "mean_target_act": 3.444,
+              "mean_control_act": 0.3021
+            },
+            {
+              "neuron_idx": 891,
+              "delta": 3.1399,
+              "mean_target_act": 3.5237,
+              "mean_control_act": 0.3838
+            },
+            {
+              "neuron_idx": 866,
+              "delta": 3.1367,
+              "mean_target_act": 3.4104,
+              "mean_control_act": 0.2737
+            }
+          ]
+        },
+        "with_statement": {
+          "sample_pairs": 60,
+          "target_keyword": "with",
+          "mean_overall_delta": 0.1917,
+          "delta_variance": 0.2183,
+          "quantiles": {
+            "q00_min": 0.0501,
+            "q25": 0.0744,
+            "q50_median": 0.099,
+            "q75": 0.1218,
+            "q95": 0.1389,
+            "q100_max": 2.52
+          },
+          "top_candidate_neurons": [
+            {
+              "neuron_idx": 403,
+              "delta": 2.52,
+              "mean_target_act": 2.7555,
+              "mean_control_act": 0.2355
+            },
+            {
+              "neuron_idx": 28,
+              "delta": 2.5178,
+              "mean_target_act": 2.6125,
+              "mean_control_act": 0.0947
+            },
+            {
+              "neuron_idx": 128,
+              "delta": 2.5165,
+              "mean_target_act": 2.658,
+              "mean_control_act": 0.1415
+            },
+            {
+              "neuron_idx": 278,
+              "delta": 2.5163,
+              "mean_target_act": 2.5803,
+              "mean_control_act": 0.064
+            },
+            {
+              "neuron_idx": 628,
+              "delta": 2.5157,
+              "mean_target_act": 2.6948,
+              "mean_control_act": 0.179
+            }
+          ]
+        }
+      }
+    },
+    "layer_24": {
+      "layer_index": 24,
+      "hook_path": "blocks.24.mlp.hook_post",
+      "monitored_dim": 1024,
+      "peak_variance": 0.392,
+      "categories": {
+        "async_await": {
+          "sample_pairs": 60,
+          "target_keyword": "async",
+          "mean_overall_delta": 0.1939,
+          "delta_variance": 0.2357,
+          "quantiles": {
+            "q00_min": 0.0502,
+            "q25": 0.0714,
+            "q50_median": 0.0978,
+            "q75": 0.1217,
+            "q95": 0.1393,
+            "q100_max": 2.6118
+          },
+          "top_candidate_neurons": [
+            {
+              "neuron_idx": 213,
+              "delta": 2.6118,
+              "mean_target_act": 2.7192,
+              "mean_control_act": 0.1074
+            },
+            {
+              "neuron_idx": 863,
+              "delta": 2.6057,
+              "mean_target_act": 2.9879,
+              "mean_control_act": 0.3822
+            },
+            {
+              "neuron_idx": 463,
+              "delta": 2.603,
+              "mean_target_act": 2.901,
+              "mean_control_act": 0.2979
+            },
+            {
+              "neuron_idx": 138,
+              "delta": 2.6008,
+              "mean_target_act": 2.6988,
+              "mean_control_act": 0.0979
+            },
+            {
+              "neuron_idx": 413,
+              "delta": 2.5985,
+              "mean_target_act": 2.8263,
+              "mean_control_act": 0.2277
+            }
+          ]
+        },
+        "class_def": {
+          "sample_pairs": 60,
+          "target_keyword": "class",
+          "mean_overall_delta": 0.2237,
+          "delta_variance": 0.392,
+          "quantiles": {
+            "q00_min": 0.0501,
+            "q25": 0.0755,
+            "q50_median": 0.0972,
+            "q75": 0.121,
+            "q95": 0.1387,
+            "q100_max": 3.3287
+          },
+          "top_candidate_neurons": [
+            {
+              "neuron_idx": 259,
+              "delta": 3.3287,
+              "mean_target_act": 3.5111,
+              "mean_control_act": 0.1823
+            },
+            {
+              "neuron_idx": 459,
+              "delta": 3.3273,
+              "mean_target_act": 3.4433,
+              "mean_control_act": 0.116
+            },
+            {
+              "neuron_idx": 659,
+              "delta": 3.3262,
+              "mean_target_act": 3.5074,
+              "mean_control_act": 0.1812
+            },
+            {
+              "neuron_idx": 784,
+              "delta": 3.3249,
+              "mean_target_act": 3.4373,
+              "mean_control_act": 0.1124
+            },
+            {
+              "neuron_idx": 509,
+              "delta": 3.3244,
+              "mean_target_act": 3.7222,
+              "mean_control_act": 0.3978
+            }
+          ]
+        },
+        "nested_loop": {
+          "sample_pairs": 60,
+          "target_keyword": "for",
+          "mean_overall_delta": 0.2077,
+          "delta_variance": 0.3085,
+          "quantiles": {
+            "q00_min": 0.0501,
+            "q25": 0.0721,
+            "q50_median": 0.0969,
+            "q75": 0.1203,
+            "q95": 0.1392,
+            "q100_max": 2.968
+          },
+          "top_candidate_neurons": [
+            {
+              "neuron_idx": 198,
+              "delta": 2.968,
+              "mean_target_act": 3.0516,
+              "mean_control_act": 0.0836
+            },
+            {
+              "neuron_idx": 773,
+              "delta": 2.9664,
+              "mean_target_act": 3.1099,
+              "mean_control_act": 0.1434
+            },
+            {
+              "neuron_idx": 523,
+              "delta": 2.9644,
+              "mean_target_act": 3.4111,
+              "mean_control_act": 0.4467
+            },
+            {
+              "neuron_idx": 623,
+              "delta": 2.9621,
+              "mean_target_act": 3.1005,
+              "mean_control_act": 0.1384
+            },
+            {
+              "neuron_idx": 798,
+              "delta": 2.9584,
+              "mean_target_act": 3.2191,
+              "mean_control_act": 0.2607
+            }
+          ]
+        },
+        "try_except": {
+          "sample_pairs": 60,
+          "target_keyword": "try",
+          "mean_overall_delta": 0.2164,
+          "delta_variance": 0.3484,
+          "quantiles": {
+            "q00_min": 0.0501,
+            "q25": 0.0747,
+            "q50_median": 0.0982,
+            "q75": 0.1223,
+            "q95": 0.1392,
+            "q100_max": 3.1435
+          },
+          "top_candidate_neurons": [
+            {
+              "neuron_idx": 816,
+              "delta": 3.1435,
+              "mean_target_act": 3.2209,
+              "mean_control_act": 0.0774
+            },
+            {
+              "neuron_idx": 66,
+              "delta": 3.1401,
+              "mean_target_act": 3.3584,
+              "mean_control_act": 0.2183
+            },
+            {
+              "neuron_idx": 916,
+              "delta": 3.1372,
+              "mean_target_act": 3.5007,
+              "mean_control_act": 0.3636
+            },
+            {
+              "neuron_idx": 616,
+              "delta": 3.1357,
+              "mean_target_act": 3.5366,
+              "mean_control_act": 0.401
+            },
+            {
+              "neuron_idx": 241,
+              "delta": 3.1339,
+              "mean_target_act": 3.5937,
+              "mean_control_act": 0.4598
+            }
+          ]
+        },
+        "with_statement": {
+          "sample_pairs": 60,
+          "target_keyword": "with",
+          "mean_overall_delta": 0.191,
+          "delta_variance": 0.2187,
+          "quantiles": {
+            "q00_min": 0.0502,
+            "q25": 0.0742,
+            "q50_median": 0.0975,
+            "q75": 0.1206,
+            "q95": 0.1392,
+            "q100_max": 2.5197
+          },
+          "top_candidate_neurons": [
+            {
+              "neuron_idx": 778,
+              "delta": 2.5197,
+              "mean_target_act": 2.7941,
+              "mean_control_act": 0.2744
+            },
+            {
+              "neuron_idx": 453,
+              "delta": 2.5158,
+              "mean_target_act": 2.8734,
+              "mean_control_act": 0.3576
+            },
+            {
+              "neuron_idx": 603,
+              "delta": 2.5156,
+              "mean_target_act": 2.662,
+              "mean_control_act": 0.1464
+            },
+            {
+              "neuron_idx": 378,
+              "delta": 2.5156,
+              "mean_target_act": 2.6356,
+              "mean_control_act": 0.12
+            },
+            {
+              "neuron_idx": 353,
+              "delta": 2.5118,
+              "mean_target_act": 2.881,
+              "mean_control_act": 0.3692
+            }
+          ]
+        }
+      }
+    },
+    "layer_32": {
+      "layer_index": 32,
+      "hook_path": "blocks.32.mlp.hook_post",
+      "monitored_dim": 1024,
+      "peak_variance": 0.3908,
+      "categories": {
+        "async_await": {
+          "sample_pairs": 60,
+          "target_keyword": "async",
+          "mean_overall_delta": 0.1934,
+          "delta_variance": 0.2368,
+          "quantiles": {
+            "q00_min": 0.05,
+            "q25": 0.0733,
+            "q50_median": 0.0954,
+            "q75": 0.1197,
+            "q95": 0.1394,
+            "q100_max": 2.6155
+          },
+          "top_candidate_neurons": [
+            {
+              "neuron_idx": 888,
+              "delta": 2.6155,
+              "mean_target_act": 2.9394,
+              "mean_control_act": 0.324
+            },
+            {
+              "neuron_idx": 913,
+              "delta": 2.6154,
+              "mean_target_act": 2.851,
+              "mean_control_act": 0.2356
+            },
+            {
+              "neuron_idx": 463,
+              "delta": 2.6149,
+              "mean_target_act": 2.7365,
+              "mean_control_act": 0.1216
+            },
+            {
+              "neuron_idx": 988,
+              "delta": 2.6104,
+              "mean_target_act": 3.0213,
+              "mean_control_act": 0.4108
+            },
+            {
+              "neuron_idx": 388,
+              "delta": 2.6088,
+              "mean_target_act": 2.8714,
+              "mean_control_act": 0.2626
+            }
+          ]
+        },
+        "class_def": {
+          "sample_pairs": 60,
+          "target_keyword": "class",
+          "mean_overall_delta": 0.2229,
+          "delta_variance": 0.3908,
+          "quantiles": {
+            "q00_min": 0.05,
+            "q25": 0.0744,
+            "q50_median": 0.0968,
+            "q75": 0.1195,
+            "q95": 0.1394,
+            "q100_max": 3.3257
+          },
+          "top_candidate_neurons": [
+            {
+              "neuron_idx": 434,
+              "delta": 3.3257,
+              "mean_target_act": 3.7143,
+              "mean_control_act": 0.3886
+            },
+            {
+              "neuron_idx": 309,
+              "delta": 3.3231,
+              "mean_target_act": 3.7679,
+              "mean_control_act": 0.4448
+            },
+            {
+              "neuron_idx": 559,
+              "delta": 3.3196,
+              "mean_target_act": 3.7883,
+              "mean_control_act": 0.4687
+            },
+            {
+              "neuron_idx": 34,
+              "delta": 3.3154,
+              "mean_target_act": 3.5641,
+              "mean_control_act": 0.2487
+            },
+            {
+              "neuron_idx": 859,
+              "delta": 3.3126,
+              "mean_target_act": 3.4949,
+              "mean_control_act": 0.1823
+            }
+          ]
+        },
+        "nested_loop": {
+          "sample_pairs": 60,
+          "target_keyword": "for",
+          "mean_overall_delta": 0.2092,
+          "delta_variance": 0.3079,
+          "quantiles": {
+            "q00_min": 0.0501,
+            "q25": 0.0751,
+            "q50_median": 0.0982,
+            "q75": 0.1208,
+            "q95": 0.139,
+            "q100_max": 2.9662
+          },
+          "top_candidate_neurons": [
+            {
+              "neuron_idx": 323,
+              "delta": 2.9662,
+              "mean_target_act": 3.2625,
+              "mean_control_act": 0.2962
+            },
+            {
+              "neuron_idx": 698,
+              "delta": 2.9653,
+              "mean_target_act": 3.3628,
+              "mean_control_act": 0.3975
+            },
+            {
+              "neuron_idx": 73,
+              "delta": 2.9643,
+              "mean_target_act": 3.1659,
+              "mean_control_act": 0.2016
+            },
+            {
+              "neuron_idx": 998,
+              "delta": 2.9596,
+              "mean_target_act": 3.0437,
+              "mean_control_act": 0.0841
+            },
+            {
+              "neuron_idx": 273,
+              "delta": 2.9584,
+              "mean_target_act": 3.0963,
+              "mean_control_act": 0.1379
+            }
+          ]
+        },
+        "try_except": {
+          "sample_pairs": 60,
+          "target_keyword": "try",
+          "mean_overall_delta": 0.2153,
+          "delta_variance": 0.3476,
+          "quantiles": {
+            "q00_min": 0.05,
+            "q25": 0.0743,
+            "q50_median": 0.0978,
+            "q75": 0.1198,
+            "q95": 0.1395,
+            "q100_max": 3.1493
+          },
+          "top_candidate_neurons": [
+            {
+              "neuron_idx": 466,
+              "delta": 3.1493,
+              "mean_target_act": 3.4071,
+              "mean_control_act": 0.2578
+            },
+            {
+              "neuron_idx": 16,
+              "delta": 3.1455,
+              "mean_target_act": 3.2341,
+              "mean_control_act": 0.0886
+            },
+            {
+              "neuron_idx": 266,
+              "delta": 3.144,
+              "mean_target_act": 3.4893,
+              "mean_control_act": 0.3453
+            },
+            {
+              "neuron_idx": 441,
+              "delta": 3.1397,
+              "mean_target_act": 3.2618,
+              "mean_control_act": 0.1222
+            },
+            {
+              "neuron_idx": 541,
+              "delta": 3.1375,
+              "mean_target_act": 3.4006,
+              "mean_control_act": 0.2631
+            }
+          ]
+        },
+        "with_statement": {
+          "sample_pairs": 60,
+          "target_keyword": "with",
+          "mean_overall_delta": 0.1907,
+          "delta_variance": 0.2197,
+          "quantiles": {
+            "q00_min": 0.0501,
+            "q25": 0.0739,
+            "q50_median": 0.0971,
+            "q75": 0.1219,
+            "q95": 0.1391,
+            "q100_max": 2.5147
+          },
+          "top_candidate_neurons": [
+            {
+              "neuron_idx": 403,
+              "delta": 2.5147,
+              "mean_target_act": 2.9097,
+              "mean_control_act": 0.395
+            },
+            {
+              "neuron_idx": 603,
+              "delta": 2.5137,
+              "mean_target_act": 2.8336,
+              "mean_control_act": 0.3199
+            },
+            {
+              "neuron_idx": 453,
+              "delta": 2.5132,
+              "mean_target_act": 2.6299,
+              "mean_control_act": 0.1167
+            },
+            {
+              "neuron_idx": 128,
+              "delta": 2.5124,
+              "mean_target_act": 2.7144,
+              "mean_control_act": 0.202
+            },
+            {
+              "neuron_idx": 903,
+              "delta": 2.5121,
+              "mean_target_act": 2.6936,
+              "mean_control_act": 0.1815
+            }
+          ]
+        }
+      }
+    }
+  }
+}
