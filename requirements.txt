@@ -1,0 +1,13 @@
+# Core Interpretability & Modeling
+torch>=2.2.0
+transformers>=4.40.0
+accelerate>=0.29.0
+datasets>=2.18.0
+transformer-lens>=1.14.0
+
+# Scientific Computing & Utilities
+numpy>=1.26.0
+scipy>=1.12.0
+tqdm>=4.66.0
+pydantic>=2.6.0
+python-dotenv>=1.0.0
