@@ -15,9 +15,31 @@ Exports formatted scoring metrics to `corpus/monosemanticity_scores.json`.
 import argparse
 import json
 import logging
+import os
+import random
 import sys
 from pathlib import Path
 from typing import Dict, List, Any
+
+# Global Bitwise Reproducibility
+SEED = 42
+random.seed(SEED)
+os.environ["PYTHONHASHSEED"] = str(SEED)
+try:
+    import random, os, numpy as np, torch
+
+    np.random.seed(SEED)
+    torch.manual_seed(SEED)
+    torch.cuda.manual_seed_all(SEED)
+    torch.backends.cudnn.deterministic = True
+except ImportError:
+    try:
+        import numpy as np  # type: ignore
+
+        np.random.seed(SEED)
+    except ImportError:
+        np = None  # type: ignore
+    torch = None  # type: ignore
 
 logger = logging.getLogger("gemma_clean_code.scoring")
 if not logger.handlers:

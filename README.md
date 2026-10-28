@@ -28,7 +28,10 @@ gemma_clean_code/
 │   ├── generate_corpus.py            # Programmatic synthetic AST dataset builder
 │   ├── cache_activations.py          # Depth-sampled TransformerLens forward hooks
 │   ├── analyze_monosemanticity.py    # Monosemantic Selectivity Ratio (MSR) scoring
-│   └── ablate_and_test.py            # Causal zero-ablation forward intervention
+│   ├── ablate_and_test.py            # Causal zero-ablation forward intervention
+│   └── agent_diagnostic_hook.py      # In-situ real-time AST neuron diagnostic hook
+├── docs/
+│   └── paper_draft.md                # Gemma 4 Developer Agent Paper Track manuscript
 ├── notebooks/
 │   ├── 01_setup_and_corpus.ipynb     # Setup, authentication & AST corpus exploration
 │   ├── 02_activation_caching.ipynb   # Depth-sampled MLP activation caching across middle layers
@@ -83,6 +86,9 @@ python scripts/analyze_monosemanticity.py
 
 # 4. Run causal zero-ablation interventions
 python scripts/ablate_and_test.py
+
+# 5. Run live in-situ agent diagnostic hook telemetry
+python scripts/agent_diagnostic_hook.py --dry-run
 ```
 
 ---

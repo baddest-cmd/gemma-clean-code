@@ -28,7 +28,7 @@
         "max_probability_drop": 0.0297
       },
       "causal_necessity_confirmed": true,
-      "causal_specificity_ratio": 63.85
+      "causal_specificity_ratio": 63.84
     },
     "class_def": {
       "tested_neuron": {
@@ -72,7 +72,7 @@
         "max_probability_drop": 0.0284
       },
       "causal_necessity_confirmed": true,
-      "causal_specificity_ratio": 70.78
+      "causal_specificity_ratio": 70.79
     },
     "try_except": {
       "tested_neuron": {
