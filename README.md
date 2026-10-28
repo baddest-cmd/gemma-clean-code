@@ -88,7 +88,21 @@ python scripts/analyze_monosemanticity.py
 python scripts/ablate_and_test.py
 
 # 5. Run live in-situ agent diagnostic hook telemetry
-python scripts/agent_diagnostic_hook.py --dry-run
+python scripts/agent_diagnostic_hook.py
+```
+
+### 4. In-Situ Diagnostic Hook (`ASTDiagnosticHook`)
+
+Developer agents can attach `ASTDiagnosticHook` directly to `google/gemma-4-12B-it` during streaming generation to monitor native AST neurons (`L16#109`, `L16#278`, `L24#138`, `L24#198`, `L24#816`) and flag syntax structure shifts prior to token emission:
+
+```python
+from scripts.agent_diagnostic_hook import ASTDiagnosticHook
+
+hook = ASTDiagnosticHook(confidence_threshold=0.75)
+logits = model.run_with_hooks(tokens, fwd_hooks=hook.get_fwd_hooks())
+
+for shift in hook.active_shifts():
+    print(f"Flagged {shift.construct} at L{shift.layer}#{shift.neuron_id} (conf={shift.confidence:.2f})")
 ```
 
 ---
