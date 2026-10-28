@@ -13,30 +13,12 @@ Outputs are saved to `corpus/gemma_ast_corpus.jsonl`.
 
 import ast
 import json
-import os
 import random
 from pathlib import Path
 from typing import Dict, List, Any, Set
 
-# Global Bitwise Reproducibility
 SEED = 42
 random.seed(SEED)
-os.environ["PYTHONHASHSEED"] = str(SEED)
-try:
-    import random, os, numpy as np, torch
-
-    np.random.seed(SEED)
-    torch.manual_seed(SEED)
-    torch.cuda.manual_seed_all(SEED)
-    torch.backends.cudnn.deterministic = True
-except ImportError:
-    try:
-        import numpy as np  # type: ignore
-
-        np.random.seed(SEED)
-    except ImportError:
-        np = None  # type: ignore
-    torch = None  # type: ignore
 
 
 class ASTNodeCollector(ast.NodeVisitor):

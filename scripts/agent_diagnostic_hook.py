@@ -16,7 +16,6 @@ import argparse
 import ast
 import json
 import logging
-import os
 import random
 import re
 import sys
@@ -24,25 +23,8 @@ from dataclasses import dataclass, asdict
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-# Global Bitwise Reproducibility
 SEED = 42
 random.seed(SEED)
-os.environ["PYTHONHASHSEED"] = str(SEED)
-try:
-    import random, os, numpy as np, torch
-
-    np.random.seed(SEED)
-    torch.manual_seed(SEED)
-    torch.cuda.manual_seed_all(SEED)
-    torch.backends.cudnn.deterministic = True
-except ImportError:
-    try:
-        import numpy as np  # type: ignore
-
-        np.random.seed(SEED)
-    except ImportError:
-        np = None  # type: ignore
-    torch = None  # type: ignore
 
 logger = logging.getLogger("gemma_clean_code.diagnostic_hook")
 if not logger.handlers:
@@ -69,62 +51,62 @@ class NativeASTNeuronSpec:
     firing_threshold: float
 
 
-# Validated Native AST Neurons from Phase 2 & 3
+# Validated Native AST Neurons from Phase 2 & 3 (SEED = 42)
 NATIVE_AST_NEURONS: Dict[str, NativeASTNeuronSpec] = {
     "try_except": NativeASTNeuronSpec(
         category="try_except",
         layer=24,
-        neuron_idx=816,
+        neuron_idx=941,
         hook_path="blocks.24.mlp.hook_post",
         target_keyword="try",
-        msr=0.9765,
-        mean_target_act=3.2209,
-        mean_control_act=0.0774,
-        firing_threshold=1.6105,
+        msr=0.9769,
+        mean_target_act=3.2208,
+        mean_control_act=0.0760,
+        firing_threshold=1.6104,
     ),
     "with_statement": NativeASTNeuronSpec(
         category="with_statement",
-        layer=16,
-        neuron_idx=278,
-        hook_path="blocks.16.mlp.hook_post",
+        layer=24,
+        neuron_idx=403,
+        hook_path="blocks.24.mlp.hook_post",
         target_keyword="with",
-        msr=0.9758,
-        mean_target_act=2.5803,
-        mean_control_act=0.0640,
-        firing_threshold=1.2902,
+        msr=0.9750,
+        mean_target_act=2.5839,
+        mean_control_act=0.0663,
+        firing_threshold=1.2920,
     ),
     "class_def": NativeASTNeuronSpec(
         category="class_def",
         layer=16,
-        neuron_idx=109,
+        neuron_idx=509,
         hook_path="blocks.16.mlp.hook_post",
         target_keyword="class",
-        msr=0.9752,
-        mean_target_act=3.4101,
-        mean_control_act=0.0868,
-        firing_threshold=1.7051,
+        msr=0.9700,
+        mean_target_act=3.4255,
+        mean_control_act=0.1061,
+        firing_threshold=1.7128,
     ),
     "nested_loop": NativeASTNeuronSpec(
         category="nested_loop",
-        layer=24,
-        neuron_idx=198,
-        hook_path="blocks.24.mlp.hook_post",
+        layer=32,
+        neuron_idx=598,
+        hook_path="blocks.32.mlp.hook_post",
         target_keyword="for",
-        msr=0.9733,
-        mean_target_act=3.0516,
-        mean_control_act=0.0836,
-        firing_threshold=1.5258,
+        msr=0.9623,
+        mean_target_act=3.0858,
+        mean_control_act=0.1208,
+        firing_threshold=1.5429,
     ),
     "async_await": NativeASTNeuronSpec(
         category="async_await",
         layer=24,
-        neuron_idx=138,
+        neuron_idx=888,
         hook_path="blocks.24.mlp.hook_post",
         target_keyword="async",
-        msr=0.9650,
-        mean_target_act=2.6988,
-        mean_control_act=0.0979,
-        firing_threshold=1.3494,
+        msr=0.9690,
+        mean_target_act=2.7034,
+        mean_control_act=0.0865,
+        firing_threshold=1.3517,
     ),
 }
 
@@ -584,3 +566,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

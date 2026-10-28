@@ -22,25 +22,8 @@ import sys
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Tuple
 
-# Global Bitwise Reproducibility
 SEED = 42
 random.seed(SEED)
-os.environ["PYTHONHASHSEED"] = str(SEED)
-try:
-    import random, os, numpy as np, torch
-
-    np.random.seed(SEED)
-    torch.manual_seed(SEED)
-    torch.cuda.manual_seed_all(SEED)
-    torch.backends.cudnn.deterministic = True
-except ImportError:
-    try:
-        import numpy as np  # type: ignore
-
-        np.random.seed(SEED)
-    except ImportError:
-        np = None  # type: ignore
-    torch = None  # type: ignore
 
 logger = logging.getLogger("gemma_clean_code.caching")
 if not logger.handlers:
@@ -150,10 +133,13 @@ def run_activation_caching(
 
     if not dry_run:
         try:
+            import numpy as np
             import torch
             from transformer_lens import HookedTransformer
             from scripts.auth_utils import setup_hf_auth
 
+            np.random.seed(SEED)
+            torch.manual_seed(SEED)
             setup_hf_auth()
 
             # Determine device
@@ -205,7 +191,7 @@ def run_activation_caching(
             n_samples = len(cat_pairs)
 
             if dry_run or model is None:
-                # Deterministic synthetic simulation for validation/benchmarking (seeded by SEED=42)
+                # Deterministic synthetic simulation for validation/benchmarking
                 cat_params = {
                     "async_await": (13, 0.13),
                     "class_def": (9, 0.84),
@@ -213,43 +199,16 @@ def run_activation_caching(
                     "try_except": (16, 0.66),
                     "with_statement": (3, 0.03),
                 }
-                calibrated_top5 = {
-                    (16, "async_await"): [(88, 2.7613, 0.1415), (113, 3.0613, 0.4439), (288, 2.8279, 0.2115), (188, 2.868, 0.2521), (688, 2.7988, 0.1869)],
-                    (16, "class_def"): [(459, 3.599, 0.2703), (884, 3.7831, 0.456), (409, 3.5688, 0.2455), (109, 3.4101, 0.0868), (59, 3.7645, 0.4434)],
-                    (16, "nested_loop"): [(398, 3.1529, 0.1842), (198, 3.2434, 0.2757), (548, 3.4007, 0.4341), (598, 3.3393, 0.3737), (673, 3.0751, 0.1112)],
-                    (16, "try_except"): [(191, 3.381, 0.233), (216, 3.3512, 0.2069), (841, 3.444, 0.3021), (891, 3.5237, 0.3838), (866, 3.4104, 0.2737)],
-                    (16, "with_statement"): [(403, 2.7555, 0.2355), (28, 2.6125, 0.0947), (128, 2.658, 0.1415), (278, 2.5803, 0.064), (628, 2.6948, 0.179)],
-                    (24, "async_await"): [(213, 2.7192, 0.1074), (863, 2.9879, 0.3822), (463, 2.901, 0.2979), (138, 2.6988, 0.0979), (413, 2.8263, 0.2277)],
-                    (24, "class_def"): [(259, 3.5111, 0.1823), (459, 3.4433, 0.116), (659, 3.5074, 0.1812), (784, 3.4373, 0.1124), (509, 3.7222, 0.3978)],
-                    (24, "nested_loop"): [(198, 3.0516, 0.0836), (773, 3.1099, 0.1434), (523, 3.4111, 0.4467), (623, 3.1005, 0.1384), (798, 3.2191, 0.2607)],
-                    (24, "try_except"): [(816, 3.2209, 0.0774), (66, 3.3584, 0.2183), (916, 3.5007, 0.3636), (616, 3.5366, 0.401), (241, 3.5937, 0.4598)],
-                    (24, "with_statement"): [(778, 2.7941, 0.2744), (453, 2.8734, 0.3576), (603, 2.662, 0.1464), (378, 2.6356, 0.12), (353, 2.881, 0.3692)],
-                    (32, "async_await"): [(888, 2.9394, 0.324), (913, 2.851, 0.2356), (463, 2.7365, 0.1216), (988, 3.0213, 0.4108), (388, 2.8714, 0.2626)],
-                    (32, "class_def"): [(434, 3.7143, 0.3886), (309, 3.7679, 0.4448), (559, 3.7883, 0.4687), (34, 3.5641, 0.2487), (859, 3.4949, 0.1823)],
-                    (32, "nested_loop"): [(323, 3.2625, 0.2962), (698, 3.3628, 0.3975), (73, 3.1659, 0.2016), (998, 3.0437, 0.0841), (273, 3.0963, 0.1379)],
-                    (32, "try_except"): [(466, 3.4071, 0.2578), (16, 3.2341, 0.0886), (266, 3.4893, 0.3453), (441, 3.2618, 0.1222), (541, 3.4006, 0.2631)],
-                    (32, "with_statement"): [(403, 2.9097, 0.395), (603, 2.8336, 0.3199), (453, 2.6299, 0.1167), (128, 2.7144, 0.202), (903, 2.6936, 0.1815)],
-                }
                 mod25, cat_seed_boost = cat_params.get(cat, (0, 0.10))
-                det_seed = SEED * 1000 + layer * 10 + categories.index(cat)
-                rng = random.Random(det_seed)
-                top5_lookup = {
-                    idx: (t_val, c_val)
-                    for idx, t_val, c_val in calibrated_top5.get((layer, cat), [])
-                }
+                cat_idx = categories.index(cat)
+                rng = random.Random(SEED * 1000 + layer * 10 + cat_idx)
 
                 for i in range(len(target_acts_sum)):
+                    is_monosemantic_candidate = (i % 25 == mod25)
+                    spike = (2.5 + cat_seed_boost) if is_monosemantic_candidate else 0.15
                     base_val = rng.uniform(0.05, 0.45)
-                    ctrl_noise = rng.uniform(0.01, 0.10)
-                    if i in top5_lookup:
-                        t_mean, c_mean = top5_lookup[i]
-                        target_acts_sum[i] = t_mean * n_samples
-                        control_acts_sum[i] = c_mean * n_samples
-                    else:
-                        is_monosemantic_candidate = (i % 25 == mod25)
-                        spike = (2.5 + cat_seed_boost - 0.025) if is_monosemantic_candidate else 0.15
-                        target_acts_sum[i] = (base_val + spike) * n_samples
-                        control_acts_sum[i] = (base_val + ctrl_noise) * n_samples
+                    target_acts_sum[i] = (base_val + spike) * n_samples
+                    control_acts_sum[i] = (base_val + rng.uniform(0.01, 0.10)) * n_samples
             else:
                 import torch
 

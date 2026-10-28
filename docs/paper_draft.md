@@ -59,4 +59,4 @@ Because these AST detectors exist natively in the un-decomposed MLP basis of `go
 
 ## 5. Reproducibility
 
-All pipeline scripts enforce deterministic seeding (`SEED = 42` across `random`, `numpy`, `torch`, `torch.cuda`, `PYTHONHASHSEED`, and `cudnn.deterministic = True`).
+All pipeline scripts enforce deterministic seeding (`SEED = 42` via `random.seed(42)`, `np.random.seed(42)`, and `torch.manual_seed(42)`).

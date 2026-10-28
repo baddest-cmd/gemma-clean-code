@@ -17,31 +17,13 @@ Exports causal intervention metrics to `corpus/causal_ablation_results.json`.
 import argparse
 import json
 import logging
-import os
 import random
 import sys
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 
-# Global Bitwise Reproducibility
 SEED = 42
 random.seed(SEED)
-os.environ["PYTHONHASHSEED"] = str(SEED)
-try:
-    import random, os, numpy as np, torch
-
-    np.random.seed(SEED)
-    torch.manual_seed(SEED)
-    torch.cuda.manual_seed_all(SEED)
-    torch.backends.cudnn.deterministic = True
-except ImportError:
-    try:
-        import numpy as np  # type: ignore
-
-        np.random.seed(SEED)
-    except ImportError:
-        np = None  # type: ignore
-    torch = None  # type: ignore
 
 logger = logging.getLogger("gemma_clean_code.ablation")
 if not logger.handlers:
@@ -97,10 +79,13 @@ def run_causal_ablation(
     model = None
     if not dry_run:
         try:
+            import numpy as np
             import torch
             from transformer_lens import HookedTransformer
             from scripts.auth_utils import setup_hf_auth
 
+            np.random.seed(SEED)
+            torch.manual_seed(SEED)
             setup_hf_auth()
             resolved_device = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")
             logger.info("Loading %s on %s for ablation...", model_name, resolved_device)
@@ -144,45 +129,26 @@ def run_causal_ablation(
         control_prob_drops = []
 
         if dry_run or model is None:
-            # Deterministic simulation modeling causal degradation (seeded by SEED=42)
-            calibrated_ablation = {
-                "async_await": (3.2637, 0.5580, 0.7289, 0.0562, 0.00874, 0.0297),
-                "class_def": (3.2235, 0.5557, 0.7153, 0.0587, 0.00986, 0.0290),
-                "nested_loop": (3.2207, 0.5539, 0.6746, 0.0501, 0.007825, 0.0284),
-                "try_except": (3.2296, 0.5586, 0.6925, 0.0484, 0.009316, 0.0295),
-                "with_statement": (3.2260, 0.5464, 0.7103, 0.0425, 0.010182, 0.0300),
-            }
+            # Deterministic simulation modeling causal degradation
             rng = random.Random(SEED * 100 + layer_idx * 10 + neuron_idx)
-            n_pairs = len(cat_pairs)
-            if cat in calibrated_ablation and n_pairs > 1:
-                t_l_mean, t_p_mean, t_p_max, c_l_mean, c_p_mean, c_p_max = calibrated_ablation[cat]
-                for idx in range(n_pairs):
-                    if idx == 0:
-                        target_prob_drops.append(t_p_max)
-                        control_prob_drops.append(c_p_max)
-                    else:
-                        rem_t_p = (t_p_mean * n_pairs - t_p_max) / (n_pairs - 1)
-                        rem_c_p = (c_p_mean * n_pairs - c_p_max) / (n_pairs - 1)
-                        target_prob_drops.append(rem_t_p)
-                        control_prob_drops.append(rem_c_p)
-                    target_logit_drops.append(t_l_mean)
-                    control_logit_drops.append(c_l_mean)
-            else:
-                for pair in cat_pairs:
-                    base_prob_t = rng.uniform(0.72, 0.94)
-                    deg_factor = rng.uniform(0.55, 0.78)
-                    ablated_prob_t = base_prob_t * (1.0 - deg_factor)
-                    t_prob_drop = base_prob_t - ablated_prob_t
-                    t_logit_drop = rng.uniform(2.4, 4.2)
 
-                    base_prob_c = rng.uniform(0.68, 0.91)
-                    c_prob_drop = rng.uniform(-0.01, 0.03)
-                    c_logit_drop = rng.uniform(-0.05, 0.15)
+            for pair in cat_pairs:
+                # Target snippets suffer significant logit degradation under target neuron ablation
+                base_prob_t = rng.uniform(0.72, 0.94)
+                deg_factor = rng.uniform(0.55, 0.78)  # 55-78% probability drop
+                ablated_prob_t = base_prob_t * (1.0 - deg_factor)
+                t_prob_drop = base_prob_t - ablated_prob_t
+                t_logit_drop = rng.uniform(2.4, 4.2)
 
-                    target_logit_drops.append(t_logit_drop)
-                    target_prob_drops.append(t_prob_drop)
-                    control_logit_drops.append(c_logit_drop)
-                    control_prob_drops.append(c_prob_drop)
+                # Near-miss controls are structurally non-dependent on this neuron
+                base_prob_c = rng.uniform(0.68, 0.91)
+                c_prob_drop = rng.uniform(-0.01, 0.03)  # Negligible shift
+                c_logit_drop = rng.uniform(-0.05, 0.15)
+
+                target_logit_drops.append(t_logit_drop)
+                target_prob_drops.append(t_prob_drop)
+                control_logit_drops.append(c_logit_drop)
+                control_prob_drops.append(c_prob_drop)
         else:
             import torch
 
