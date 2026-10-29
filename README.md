@@ -6,9 +6,9 @@ An empirical mechanistic interpretability study investigating whether Gemma 4 la
 
 For detailed methodology, MSR scoring, zero-ablation experiments, and cross-scale scaling metrics, see [docs/GemmaCleanCode.md](docs/GemmaCleanCode.md).
 
-- **Native Monosemanticity:** Single un-decomposed MLP neurons exhibit extreme AST selectivity (MSR > 0.96, F1 = 1.00) across 5 Python AST categories (`try_except`, `with_statement`, `async_await`, `class_def`, `nested_loop`).
+- **Native Monosemanticity:** Single un-decomposed MLP neurons exhibit high AST selectivity (MSR > 0.96, F1 = 1.00) across 5 Python AST categories (`try_except`, `with_statement`, `async_await`, `class_def`, `nested_loop`), which indicates that these candidate neurons act as structural AST primitive detectors.
 - **Causal Precision:** Zero-ablating target neurons induces a >54% target token probability collapse with >50x causal specificity over near-miss controls.
-- **Cross-Scale Universality:** Comparative 12B vs. 31B analysis confirms selectivity sharpening (mean MSR = 0.9753) within the 40%–60% relative depth band.
+- **Cross-Scale Universality:** Comparative 12B vs. 31B analysis is consistent with native structural monosemanticity sharpening (mean MSR = 0.9755) within the 40%–60% relative depth band.
 
 ## Quick Start
 
