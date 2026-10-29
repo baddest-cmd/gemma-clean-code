@@ -1,112 +1,69 @@
-# gemma_clean_code: Native MLP AST Monosemanticity in Gemma
+# GemmaCleanCode
 
-An empirical mechanistic interpretability study investigating whether native Multi-Layer Perceptron (MLP) neurons and activation patterns in `google/gemma-4-12B-it` exhibit monosemantic representations of Abstract Syntax Tree (AST) structures and grammatical transitions during code synthesis.
+An empirical mechanistic interpretability study investigating whether Gemma 4 language models (`google/gemma-4-12B-it` and `google/gemma-4-31B-it`) maintain native, un-decomposed MLP neurons acting as dedicated detectors for Python Abstract Syntax Tree (AST) primitives without requiring Sparse Autoencoders (SAEs). Across 600 syntactically validated contrastive Python snippets, we evaluate single-neuron selectivity, causal necessity under zero-ablation, and cross-scale depth invariance.
 
-Prepared for the **Gemma 4 Paper Track**.
+## Key Findings
 
----
+For detailed methodology, MSR scoring, zero-ablation experiments, and cross-scale scaling metrics, see [docs/GemmaCleanCode.md](docs/GemmaCleanCode.md).
 
-## 🎯 Research Objectives
+- **Native Monosemanticity:** Single un-decomposed MLP neurons exhibit extreme AST selectivity (MSR > 0.96, F1 = 1.00) across 5 Python AST categories (`try_except`, `with_statement`, `async_await`, `class_def`, `nested_loop`).
+- **Causal Precision:** Zero-ablating target neurons induces a >54% target token probability collapse with >50x causal specificity over near-miss controls.
+- **Cross-Scale Universality:** Comparative 12B vs. 31B analysis confirms selectivity sharpening (mean MSR = 0.9753) within the 40%–60% relative depth band.
 
-1. **AST Representation Probing**: Pinpoint where and how structural syntax trees (`try_except`, `with_statement`, `async_await`, `class_def`, `nested_loop`) are encoded within Gemma's native representations without retraining or SAE superposition distortion.
-2. **Native MLP Monosemanticity**: Quantify the degree of monosemanticity (MSR > 0.95) in individual intermediate MLP features when executing structured code generation tasks.
-3. **Causal Zero-Ablation**: Validate whether ablating or clamping syntax-specific neuron clusters causally disrupts syntax continuation probability while preserving non-target semantic intent.
+## Quick Start
 
----
-
-## 📁 Repository Layout
-
-```text
-gemma_clean_code/
-├── corpus/
-│   ├── gemma_ast_corpus.jsonl        # 300 contrastive pairs (600 validated snippets)
-│   ├── activation_summary.json       # Layer-wise activation metrics (Layers 16, 24, 32)
-│   ├── monosemanticity_scores.json   # Precision, Recall, MSR per candidate neuron
-│   └── causal_ablation_results.json  # Causal necessity and logit degradation metrics
-├── scripts/
-│   ├── auth_utils.py                 # Colab Secrets & local .env Hugging Face authentication
-│   ├── generate_corpus.py            # Programmatic synthetic AST dataset builder
-│   ├── cache_activations.py          # Depth-sampled TransformerLens forward hooks
-│   ├── analyze_monosemanticity.py    # Monosemantic Selectivity Ratio (MSR) scoring
-│   ├── ablate_and_test.py            # Causal zero-ablation forward intervention
-│   └── agent_diagnostic_hook.py      # In-situ real-time AST neuron diagnostic hook
-├── docs/
-│   └── paper_draft.md                # Gemma 4 Developer Agent Paper Track manuscript
-├── notebooks/
-│   ├── 01_setup_and_corpus.ipynb     # Setup, authentication & AST corpus exploration
-│   ├── 02_activation_caching.ipynb   # Depth-sampled MLP activation caching across middle layers
-│   └── 03_causal_interventions.ipynb # Causal zero-ablation experiments & monosemanticity proof
-├── requirements.txt
-└── README.md
-```
-
----
-
-## 🔬 Experimental Pipeline & Key Findings
-
-| AST Construct | Sampled Layer | Peak Neuron ID | Monosemanticity (MSR) | Target Prob Drop | Control Prob Drop | Causal Specificity |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **`try_except`** | Layer 24 | #816 | **0.9765** | **-55.9%** | -0.9% | **62.1x** |
-| **`with_statement`** | Layer 16 | #278 | **0.9758** | **-54.6%** | -1.0% | **54.6x** |
-| **`async_await`** | Layer 24 | #138 | **0.9650** | **-55.8%** | -0.9% | **62.0x** |
-| **`class_def`** | Layer 16 | #109 | **0.9752** | **-55.6%** | -1.0% | **55.6x** |
-| **`nested_loop`** | Layer 24 | #198 | **0.9733** | **-55.4%** | -0.8% | **69.2x** |
-
----
-
-## 🚀 Quickstart
-
-### 1. Installation
+### 1. Environment Setup
 
 ```bash
 git clone https://github.com/baddest-cmd/gemma-clean-code.git
 cd gemma-clean-code
 pip install -r requirements.txt
-```
-
-### 2. Environment Authentication
-
-Set your Hugging Face access token for Gemma gated weights via `.env` or environment variables:
-
-```bash
 export HF_TOKEN="your_hf_token_here"
 ```
 
-### 3. Running Pipelines
+### 2. Run the 12B Baseline Audit
 
 ```bash
-# 1. Generate & validate 600-snippet AST corpus
-python scripts/generate_corpus.py
-
-# 2. Extract & cache activations across Layers 16, 24, 32
-python scripts/cache_activations.py --layers 16 24 32
-
-# 3. Score candidate neurons (MSR, Precision, Recall, F1)
-python scripts/analyze_monosemanticity.py
-
-# 4. Run causal zero-ablation interventions
-python scripts/ablate_and_test.py
-
-# 5. Run live in-situ agent diagnostic hook telemetry
-python scripts/agent_diagnostic_hook.py
+python3 scripts/analyze_monosemanticity.py
 ```
 
-### 4. In-Situ Diagnostic Hook (`ASTDiagnosticHook`)
+### 3. Run the 12B vs. 31B Comparative Analysis
 
-Developer agents can attach `ASTDiagnosticHook` directly to `google/gemma-4-12B-it` during streaming generation to monitor native AST neurons (`L16#109`, `L16#278`, `L24#138`, `L24#198`, `L24#816`) and flag syntax structure shifts prior to token emission:
-
-```python
-from scripts.agent_diagnostic_hook import ASTDiagnosticHook
-
-hook = ASTDiagnosticHook(confidence_threshold=0.75)
-logits = model.run_with_hooks(tokens, fwd_hooks=hook.get_fwd_hooks())
-
-for shift in hook.active_shifts():
-    print(f"Flagged {shift.construct} at L{shift.layer}#{shift.neuron_id} (conf={shift.confidence:.2f})")
+```bash
+python3 scripts/compare_12b_31b.py
 ```
 
----
+### 4. Attach the Real-Time Diagnostic Hook
 
-## 📜 Citation & License
+```bash
+python3 scripts/agent_diagnostic_hook.py
+```
 
-Under active development for the **Gemma 4 Paper Track**. Distributed under the Apache 2.0 License.
+## Repository Structure
+
+```text
+gemma-clean-code/
+├── corpus/
+│   ├── gemma_ast_corpus.jsonl            # 300 contrastive AST pairs (600 validated snippets)
+│   ├── activation_summary.json           # 12B MLP activation statistics (Layers 16, 24, 32)
+│   ├── activation_summary_31b.json       # 31B MLP activation statistics (Layers 24, 30, 36)
+│   ├── monosemanticity_scores.json       # 12B MSR, Precision, Recall, and F1 rankings
+│   ├── monosemanticity_scores_31b.json   # 31B MSR, Precision, Recall, and F1 rankings
+│   ├── causal_ablation_results.json      # 12B single-neuron zero-ablation metrics
+│   └── causal_ablation_results_31b.json  # 31B single-neuron zero-ablation metrics
+├── scripts/
+│   ├── auth_utils.py                     # Hugging Face token resolution helper
+│   ├── generate_corpus.py                # Deterministic contrastive AST corpus generator
+│   ├── cache_activations.py              # 12B depth-sampled MLP activation caching
+│   ├── cache_activations_31b.py          # 31B depth-sampled MLP activation caching
+│   ├── analyze_monosemanticity.py        # 12B monosemanticity scoring pipeline
+│   ├── ablate_and_test.py                # 12B causal zero-ablation intervention pipeline
+│   ├── verify_31b_access.py              # 31B architecture and hardware verifier
+│   ├── compare_12b_31b.py                # Cross-scale 12B vs. 31B scoring and ablation
+│   └── agent_diagnostic_hook.py          # Real-time forward hook for AST telemetry
+└── docs/
+    ├── GemmaCleanCode.md                 # Full technical manuscript
+    ├── 31b_experiment_blueprint.md       # Cross-scale depth mapping and experimental design
+    ├── 12b_vs_31b_scaling_comparison.md  # Comparative 12B vs. 31B empirical report
+    └── seeding_workaround_audit.md       # Reproducibility and deterministic seeding audit
+```
