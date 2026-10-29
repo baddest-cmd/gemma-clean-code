@@ -129,6 +129,7 @@ def score_31b_monosemanticity(
                         "discovery_msr": disc_metrics["msr"],
                         "target_act": ho_acts["held_out_target_act"],
                         "control_act": ho_acts["held_out_control_act"],
+                        "non_construct_keyword_act": ho_acts["non_construct_keyword_act"],
                         "delta": ho_acts["held_out_delta"],
                         "msr": ho_metrics["msr"],
                         "held_out_msr": ho_metrics["msr"],
@@ -177,9 +178,10 @@ def score_31b_monosemanticity(
             "d_mlp": d_mlp,
             "sampled_layers": act_summary["sampled_layers"],
             "evaluation_protocol": {
-                "discovery_split": "Pairs 0-29 per category (N=150 pairs / 300 snippets) used solely for neuron index selection",
-                "held_out_test_split": "Pairs 30-59 per category (N=150 pairs / 300 snippets) used exclusively for reported MSR and F1",
+                "discovery_split": "Pairs 0-29 per category (N=30 pairs per category) used solely for neuron index selection",
+                "held_out_test_split": "Pairs 30-59 per category (N=30 pairs per category) containing structural near-misses and non-construct keyword controls (identifiers, string literals, comments)",
                 "corpus_validation": "Programmatic near-miss contrastive pairs (100% ast.parse() verified)",
+                "random_baseline_summary": f"Random baseline MSR = {null_baseline['mean_msr']:.4f}, F1 = {null_baseline['mean_f1']:.4f}",
             },
             "top_k_per_category": top_k,
         },
@@ -469,12 +471,10 @@ def main() -> None:
     print("=" * 102)
     if null_12b:
         print(
-            f"12B Random Neuron Null Baseline (N={null_12b['num_random_neurons_sampled']}, d_mlp={null_12b['d_mlp_population']}): "
-            f"Mean Test MSR = {null_12b['mean_msr']:.4f} (+/- {null_12b['std_msr']:.4f}), Mean F1 = {null_12b['mean_f1']:.4f}"
+            f"12B Random baseline MSR = {null_12b['mean_msr']:.4f}, F1 = {null_12b['mean_f1']:.4f}"
         )
     print(
-        f"31B Random Neuron Null Baseline (N={null_31b['num_random_neurons_sampled']}, d_mlp={null_31b['d_mlp_population']}): "
-        f"Mean Test MSR = {null_31b['mean_msr']:.4f} (+/- {null_31b['std_msr']:.4f}), Mean F1 = {null_31b['mean_f1']:.4f}"
+        f"31B Random baseline MSR = {null_31b['mean_msr']:.4f}, F1 = {null_31b['mean_f1']:.4f}"
     )
     print("-" * 102)
     print(

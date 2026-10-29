@@ -864,10 +864,57 @@ def create_nested_loop_pairs() -> List[Dict[str, Any]]:
 
 
 # ==============================================================================
+# NON-CONSTRUCT KEYWORD CONTROL INJECTION (LEXICAL VS. STRUCTURAL DISAMBIGUATION)
+# ==============================================================================
+def inject_non_construct_keyword_control(cat_name: str, control_code: str) -> str:
+    """Inject target keyword strings in non-construct AST positions (identifiers, string literals, comments)."""
+    if cat_name == "try_except":
+        injected_lines = [
+            "    try_count = 3",
+            '    _kw_literal = "try"',
+            "    # try again",
+        ]
+    elif cat_name == "with_statement":
+        injected_lines = [
+            "    with_retry = True",
+            '    _kw_literal = "with"',
+        ]
+    elif cat_name == "class_def":
+        injected_lines = [
+            '    class_name = "User"',
+            '    _kw_literal = "class"',
+        ]
+    elif cat_name == "async_await":
+        injected_lines = [
+            "    async_mode = False",
+            '    _kw_literal = "async"',
+        ]
+    else:
+        injected_lines = [
+            "    for_each = True",
+            '    _kw_literal = "for"',
+        ]
+
+    lines = control_code.splitlines()
+    out_lines = []
+    inserted = False
+    for line in lines:
+        out_lines.append(line)
+        if not inserted and line.lstrip().startswith("def ") and line.rstrip().endswith(":"):
+            out_lines.extend(injected_lines)
+            inserted = True
+
+    if not inserted:
+        out_lines = [line.lstrip() for line in injected_lines] + out_lines
+
+    return "\n".join(out_lines) + "\n"
+
+
+# ==============================================================================
 # MAIN CORPUS BUILDER & VALIDATOR
 # ==============================================================================
 def build_and_validate_corpus(output_path: Path) -> List[Dict[str, Any]]:
-    """Assemble all 5 categories, validate AST parsing, and write JSONL."""
+    """Assemble all 5 categories, inject non-construct keyword controls, validate AST parsing, and write JSONL."""
     category_generators = [
         ("try_except", create_try_except_pairs),
         ("with_statement", create_with_statement_pairs),
@@ -886,6 +933,7 @@ def build_and_validate_corpus(output_path: Path) -> List[Dict[str, Any]]:
         for idx, item in enumerate(cat_pairs, 1):
             pair_id = f"{cat_name}_{idx:03d}"
             item["pair_id"] = pair_id
+            item["control_code"] = inject_non_construct_keyword_control(cat_name, item["control_code"])
             all_pairs.append(item)
 
     output_path.parent.mkdir(parents=True, exist_ok=True)

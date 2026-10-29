@@ -123,6 +123,7 @@ def evaluate_held_out_neuron(
     return {
         "held_out_target_act": held_out_t,
         "held_out_control_act": held_out_c,
+        "non_construct_keyword_act": held_out_c,
         "held_out_delta": round(held_out_t - held_out_c, 4),
     }
 
@@ -263,6 +264,7 @@ def analyze_monosemanticity(
                     "discovery_msr": disc_metrics["msr"],
                     "target_act": ho_acts["held_out_target_act"],
                     "control_act": ho_acts["held_out_control_act"],
+                    "non_construct_keyword_act": ho_acts["non_construct_keyword_act"],
                     "delta": ho_acts["held_out_delta"],
                     "msr": ho_metrics["msr"],
                     "held_out_msr": ho_metrics["msr"],
@@ -312,9 +314,10 @@ def analyze_monosemanticity(
             "d_mlp": d_mlp,
             "sampled_layers": act_summary["sampled_layers"],
             "evaluation_protocol": {
-                "discovery_split": "Pairs 0-29 per category (N=150 pairs / 300 snippets) used solely for neuron index selection",
-                "held_out_test_split": "Pairs 30-59 per category (N=150 pairs / 300 snippets) used exclusively for reported MSR and F1",
+                "discovery_split": "Pairs 0-29 per category (N=30 pairs per category) used solely for neuron index selection",
+                "held_out_test_split": "Pairs 30-59 per category (N=30 pairs per category) containing structural near-misses and non-construct keyword controls (identifiers, string literals, comments)",
                 "corpus_validation": "Programmatic near-miss contrastive pairs (100% ast.parse() verified)",
+                "random_baseline_summary": f"Random baseline MSR = {null_baseline['mean_msr']:.4f}, F1 = {null_baseline['mean_f1']:.4f}",
             },
             "top_k_per_category": top_k,
         },
@@ -393,9 +396,7 @@ def main() -> None:
     print(f"Model: {scores['metadata']['model_name']} (d_mlp = {scores['metadata']['d_mlp']})")
     print(f"Sampled Layers: {scores['metadata']['sampled_layers']}")
     print(
-        f"Null Random Baseline (N={null_base['num_random_neurons_sampled']}): "
-        f"Mean Held-Out MSR = {null_base['mean_msr']:.4f} (+/- {null_base['std_msr']:.4f}) | "
-        f"Mean F1 = {null_base['mean_f1']:.4f}"
+        f"Random baseline MSR = {null_base['mean_msr']:.4f}, F1 = {null_base['mean_f1']:.4f}"
     )
     print("\nTOP MONOSEMANTIC NEURONS PER AST CATEGORY (Selected on Pairs 0-29, Evaluated on Pairs 30-59):")
 
