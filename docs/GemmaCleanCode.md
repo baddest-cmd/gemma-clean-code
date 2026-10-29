@@ -107,7 +107,6 @@ In the `gemma_clean_code` study, we show that `google/gemma-4-12B-it` and `googl
 6. AI Safety ARENA Curriculum (2024). Transformer Interpretability and Mechanistic Analysis. AI Safety ARENA.
 
 ## Citation
-Peterson, S. (2026). *GemmaCleanCode: Native AST Monosemanticity and Cross-Scale Causal Precision in Gemma 4 LLMs*. Gemma 4 Developer Agent Paper Kaggle Competition.
 
 ```bibtex
 @misc{peterson2026gemmacleancode,
