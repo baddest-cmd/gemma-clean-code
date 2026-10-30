@@ -18,7 +18,7 @@ Nick Cammarata (Goodfire, 2026) challenges this view in the independent research
 ### Core research questions
 * RQ1 (Native AST Monosemanticity): Do un-decomposed MLP neurons in Gemma 4 act as structural detectors for Python AST primitives when evaluated on disjoint held-out test pairs against both structural near-misses and non-construct keyword occurrences?
 * RQ2 (Causal Necessity and Specificity): Does zero-ablating single native neurons disrupt target AST token emission on held-out snippets without destabilizing non-AST control logic?
-* RQ3 (Cross-Scale Preservation): Is native AST monosemanticity consistent with selectivity being preserved (not degraded) at larger scale (Mean Held-Out MSR = 0.9706 in 12B vs 0.9755 in 31B) when comparing `google/gemma-4-12B-it` (Layers 16, 24, 32) and `google/gemma-4-31B-it` (Layers 24, 30, 36)?
+* RQ3 (Cross-Scale Preservation): Is AST structural monosemanticity preserved at larger model scale when comparing `google/gemma-4-12B-it` (Layers 16, 24, 32) and `google/gemma-4-31B-it` (Layers 24, 30, 36)?
 
 ## Description of the research, methods, and experiments
 ### Model selection, architectural parameters, and GPU tensor provenance
@@ -90,7 +90,7 @@ Ablating one discovery-selected native neuron drops target keyword probability o
 
 ### Reproducibility audit and codebase cleanliness
 To ensure bitwise reproducibility:
-* Enforced global PyTorch and NumPy seed initialization (`torch.manual_seed(SEED)`, `np.random.seed(SEED)`) across all caching and evaluation scripts to guarantee exact forward-pass tensor reproducibility across runs.
+* Enforced global PyTorch and NumPy seed initialization (`torch.manual_seed(SEED)`, `np.random.seed(SEED)`) across all caching and evaluation scripts to ensure consistent sampling and corpus generation across runs.
 * Deleted static lookup tables (`calibrated_top5`, `calibrated_ablation`) and locked dataset PRNG sampling (`SEED = 42`).
 * Removed top-level `try-except` error suppressors so missing dependencies or authentication failures raise direct exceptions.
 * Running `scripts/generate_corpus.py` across consecutive executions yields identical SHA-256 digests.
@@ -109,7 +109,12 @@ Definitions, calibration provenance, and hardware timing:
 | :--- | :---: | :---: | :---: | :---: | :---: |
 | `ASTDiagnosticHook` Readout | Held-Out Pairs 30 to 59 | $\tau = 2.0, \beta = 1.5$ (Conf $\ge 0.75$) | 0.00% | 0.00% | 0.62 ms (0.84 ms) |
 
-Because zero-ablation of these neurons causes >50% target token probability collapse, the same hook could in principle support intervention during generation. We did not test in-flight steering, and ablating a structural neuron is expected to break code rather than redirect it to a safer alternative; whether safety-relevant constructs (e.g., subprocess, eval, file I/O, credential handling) are equally legible is left to future work.
+## Limitations and Future Work
+Our evaluations cover two model scales (`google/gemma-4-12B-it` and `google/gemma-4-31B-it`), five AST categories, three sampled layers per model (12B: L16, L24, L32; 31B: L24, L30, L36), and a template-generated contrastive corpus. Because the same generator produces both the discovery and held-out splits, real-world code distributions and unconstrained token frequencies may differ from our benchmark pairs. We also measured `blocks.{layer}.mlp.hook_post` activations directly without isolating intermediate SwiGLU gating dynamics (`hook_pre` versus `hook_gate`).
+
+These findings raise a central open question for future work: whether safety-critical hazard constructs (`subprocess`, `eval`, file I/O operations, and credential strings) exhibit similar native monosemantic legibility, or whether the clean representation thesis breaks down on hazard constructs.
+
+We did not execute in-flight dynamic steering in this study. Although zero-ablating these native neurons causes a >50% target token probability collapse, clamping a structural syntax neuron breaks code syntax and induces probability collapse rather than redirecting generation toward a safe alternative.
 
 ## Conclusion
 In the `gemma_clean_code` study, our results indicate that `google/gemma-4-12B-it` (Layers 16, 24, 32) and `google/gemma-4-31B-it` (Layers 24, 30, 36) contain native, un-decomposed MLP neurons acting as structural AST primitive detectors on disjoint held-out test code containing non-construct keyword controls, against an unselected random-neuron baseline ($\text{MSR} = 0.5002 \pm 0.0046, F_1 = 0.0000$). Cross-scale evaluation is consistent with selectivity being preserved (not degraded) at larger scale (Mean Held-Out MSR = 0.9706 in 12B vs 0.9755 in 31B) and supports sub-millisecond in-situ activation telemetry in `agent_diagnostic_hook.py`.
