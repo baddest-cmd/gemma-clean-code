@@ -6,9 +6,10 @@ An empirical mechanistic interpretability study investigating whether Gemma 4 LL
 
 For detailed methodology, held-out MSR scoring, zero-ablation experiments, and cross-scale metrics, see [docs/GemmaCleanCode.md](docs/GemmaCleanCode.md).
 
-* **Structural Monosemanticity**: In held-out evaluations, single un-decomposed MLP neurons exhibit near-unity selectivity (held-out MSR > 0.96, F1 = 1.0000) for AST primitives (`try_except`, `with_statement`, `class_def`, `async_await`, `nested_loop`). Candidate neurons remain silent on non-construct keyword controls (identifiers, comments, string literals), which indicates structural syntax detection rather than lexical token matching.
-* **Causal Necessity**: Zero-ablating candidate neurons on unseen test snippets induces a >54% (12B) and >57% (31B) target token probability collapse with >50x causal specificity over near-miss controls.
-* **Out-of-Sample Validation & Null Baseline**: Candidate neurons selected on a discovery split (N=30 pairs) generalize out-of-sample with zero score degradation on a held-out test split (N=30 pairs), standing in stark contrast to an unselected random-neuron baseline (MSR = 0.5002, F1 = 0.0000).
+* **Structural Monosemanticity**: In held-out evaluations across exact layer coordinates (12B: Layers 16, 24, 32; 31B: Layers 24, 30, 36), single un-decomposed MLP neurons exhibit near-unity selectivity (held-out MSR > 0.96, F1 = 1.0000) for AST primitives (`try_except`, `with_statement`, `class_def`, `async_await`, `nested_loop`). Candidate neurons remain silent on non-construct keyword controls ($A_{\text{control}} \le 0.1097$ across identifiers, comments, and string literals), indicating that candidate neurons act as structural AST primitive detectors rather than lexical token matchers.
+* **Causal Necessity**: Zero-ablating candidate neurons on unseen held-out test snippets induces a >54% (12B, mean Delta Logit -3.23) and >57% (31B, mean Delta Logit -3.44) target token probability collapse while shifting near-miss controls by <1.03% (>50x causal specificity).
+* **Out-of-Sample Validation & Scale Invariance**: Candidate neurons selected on a discovery split (N=30 pairs per category) generalize out-of-sample across disjoint pairs in the held-out test split (N=30 pairs per category), in contrast to an unselected random-neuron baseline (MSR = 0.5002 ± 0.0046, F1 = 0.0000). Cross-scale comparison is consistent with scale-invariant structural selectivity (Mean Held-Out MSR = 0.9706 in 12B vs 0.9755 in 31B).
+* **In-Situ Activation Telemetry (Proof of Concept)**: Native MLP neuron activations ($A = \text{value}[0, -1, \text{neuron\_id}]$) can be read mid-forward-pass, before token emission, with 0.62 ms mean hook overhead (max 0.84 ms on NVIDIA A100-SXM4-80GB) and 0.00% FPR / 0.00% FNR on held-out code at confidence threshold >= 0.75.
 
 ## Quick Start
 
@@ -29,7 +30,7 @@ python3 scripts/analyze_monosemanticity.py
 # Run 12B vs 31B comparative scaling analysis
 python3 scripts/compare_12b_31b.py
 
-# Attach in-situ streaming telemetry hook
+# Run in-situ activation telemetry hook proof of concept
 python3 scripts/agent_diagnostic_hook.py
 ```
 
